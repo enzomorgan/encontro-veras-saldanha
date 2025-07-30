@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VI Encontro da Família Veras & Saldanha - Mossoró 2026</title>
+    <style>
+      /* Ocultar botão "Made with Manus" */
+      a[href*="manus" i],
+      a[href*="Create my website" i],
+      [class*="manus" i],
+      [id*="manus" i],
+      div[style*="position: fixed"][style*="bottom"][style*="right"],
+      div[style*="position:fixed"][style*="bottom"][style*="right"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+      
+      /* Ocultar elementos fixos no canto inferior direito que contenham "Manus" */
+      div[style*="position: fixed"]:has(a[href*="manus" i]) {
+        display: none !important;
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-BuJMh_j5.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Dy54L_lS.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Script adicional para remover botão Manus
+      function removeManusButton() {
+        const elements = document.querySelectorAll('*');
+        elements.forEach(el => {
+          if (el.textContent && el.textContent.includes('Made with Manus')) {
+            el.style.display = 'none';
+            el.remove();
+          }
+        });
+      }
+      
+      // Executar quando a página carregar
+      document.addEventListener('DOMContentLoaded', removeManusButton);
+      
+      // Executar com delay para elementos carregados dinamicamente
+      setTimeout(removeManusButton, 1000);
+      setTimeout(removeManusButton, 3000);
+      setTimeout(removeManusButton, 5000);
+      
+      // Observer para detectar novos elementos
+      const observer = new MutationObserver(removeManusButton);
+      observer.observe(document.body, { childList: true, subtree: true });
+    </script>
+  </body>
+</html>
