@@ -71,3 +71,22 @@ with app.app_context():
         db.session.commit()
         print("Super administrador criado: admin@encontroveras.com / admin123456")
 
+
+# Servir arquivos estáticos do frontend
+@app.route('/')
+def serve_frontend():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/<path:path>')
+def serve_static_files(path):
+    # Se o arquivo existe na pasta static, serve ele
+    try:
+        return send_from_directory(app.static_folder, path)
+    except:
+        # Se não existe, serve o index.html (para SPA routing)
+        return send_from_directory(app.static_folder, 'index.html')
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
+
