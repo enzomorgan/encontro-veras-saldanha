@@ -4,7 +4,7 @@ from flask_cors import CORS
 from werkzeug.exceptions import NotFound
 
 # Cria a instância do Flask primeiro
-app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static')
+app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 
 # Configuração do SECRET_KEY obrigatória no ambiente
 secret_key = os.environ.get('JWT_SECRET_KEY')
