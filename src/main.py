@@ -2,6 +2,7 @@ import sys
 import subprocess
 import pkg_resources
 import os
+from werkzeug.exceptions import HTTPException
 
 
 DEPENDENCIAS_NECESSARIAS = [
@@ -10,7 +11,9 @@ DEPENDENCIAS_NECESSARIAS = [
     'python-dotenv',
     'werkzeug',
     'pyjwt',
-    'sqlalchemy'
+    'sqlalchemy',
+    'psycopg2-binary',
+    'gunicorn'
 ]
 
 def verificar_dependencias():
@@ -32,88 +35,88 @@ def verificar_dependencias():
             print(f"pip install {' '.join(faltantes)}")
             sys.exit(1)
 
-# Executa a verificação antes de tudo
 verificar_dependencias()
 
-# =============================================
-# CÓDIGO ORIGINAL DO SEU MAIN.PY (MODIFICADO)
-# =============================================
-from flask import Flask, send_from_directory
+
+from flask import Flask, send_from_directory, jsonify
 from flask_cors import CORS
 from werkzeug.exceptions import NotFound
 
-# Cria a instância do Flask primeiro
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 
-# Configurações básicas
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+# Configurações críticas para produção
+app.config.update(
+    MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB
+    SECRET_KEY=os.getenv('JWT_SECRET_KEY', 'segredo-desenvolvimento'),
+    SQLALCHEMY_DATABASE_URI=os.getenv('DATABASE_URL', '').replace('postgres://', 'postgresql://') or 
+    f'sqlite:///{os.path.join(os.path.dirname(__file__), "instance", "app.db")}',
+    SQLALCHEMY_TRACK_MODIFICATIONS=False,
+    PROPAGATE_EXCEPTIONS=True
+)
 
-# Configuração do SECRET_KEY
-secret_key = os.environ.get('JWT_SECRET_KEY')
-if not secret_key:
-    raise RuntimeError("JWT_SECRET_KEY não definida")
-app.config['SECRET_KEY'] = secret_key
+# CORS para produção (ajuste os domínios)
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "https://encontro-veras-saldanha.onrender.com",
+            "http://localhost:*"
+        ],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
+    }
+})
 
-# Habilitar CORS
-CORS(app, origins=['*'])
+# Handler global de erros
+@app.errorhandler(Exception)
+def handle_error(e):
+    code = 500
+    if isinstance(e, HTTPException):
+        code = e.code
+    return jsonify({
+        "error": str(e),
+        "message": "Ocorreu um erro no servidor"
+    }), code
 
-# Configuração do banco de dados (modificado para funcionar no Render)
-database_url = os.environ.get('DATABASE_URL')
-if database_url:
-    # Corrige para PostgreSQL
-    app.config['SQLALCHEMY_DATABASE_URI'] = database_url.replace('postgres://', 'postgresql://')
-else:
-    # Caminho absoluto para SQLite
-    db_path = os.path.join(os.path.dirname(__file__), 'instance')
-    os.makedirs(db_path, exist_ok=True)
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(db_path, "app.db")}'
 
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Importações relativas após configurações
 from src.models.user import db
 db.init_app(app)
 
-# Registrar blueprints
-from src.routes.user import user_bp
-from src.routes.auth import auth_bp
-from src.routes.pedidos import pedidos_bp
-from src.routes.pagamentos import pagamentos_bp
-from src.routes.reservas import reservas_bp
-from src.routes.status import status_bp
-from src.routes.admin_auth import admin_auth_bp
-from src.routes.admin_dashboard import admin_dashboard_bp
+# Garante que a pasta instance existe para SQLite
+if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+    os.makedirs(os.path.join(os.path.dirname(__file__), 'instance'), exist_ok=True)
 
-app.register_blueprint(user_bp, url_prefix='/api')
-app.register_blueprint(auth_bp, url_prefix='/api/auth')
-app.register_blueprint(pedidos_bp)
-app.register_blueprint(pagamentos_bp)
-app.register_blueprint(reservas_bp)
-app.register_blueprint(status_bp)
-app.register_blueprint(admin_auth_bp, url_prefix='/api')
-app.register_blueprint(admin_dashboard_bp, url_prefix='/api')
-
-# Criação das tabelas com tratamento de erros
+# Criação das tabelas
 with app.app_context():
-    from src.models.user import User
-    from src.models.pedido import Pedido
-    from src.models.pagamento import Pagamento
-    from src.models.reserva import Reserva
-    from src.models.admin import Admin, AuditLog
-    
     try:
         db.create_all()
-        print("✅ Banco de dados criado com sucesso!")
+        print("✅ Banco de dados inicializado com sucesso!")
     except Exception as e:
-        print(f"❌ Erro ao criar banco de dados: {str(e)}")
-        if 'unable to open database file' in str(e):
-            print("🔧 Dica: Verifique as permissões do diretório 'instance'")
-        elif 'already exists' in str(e):
-            print("ℹ️ As tabelas já existem no banco de dados.")
-        else:
-            print("⚠️ Erro desconhecido ao acessar o banco de dados")
+        print(f"❌ Erro no banco de dados: {str(e)}")
+        if 'already exists' not in str(e):
+            sys.exit(1)
 
-# Rotas
+
+blueprints = [
+    ('src.routes.user', 'user_bp', '/api'),
+    ('src.routes.auth', 'auth_bp', '/api/auth'),
+    ('src.routes.pedidos', 'pedidos_bp', None),
+    ('src.routes.pagamentos', 'pagamentos_bp', None),
+    ('src.routes.reservas', 'reservas_bp', None),
+    ('src.routes.status', 'status_bp', None),
+    ('src.routes.admin_auth', 'admin_auth_bp', '/api'),
+    ('src.routes.admin_dashboard', 'admin_dashboard_bp', '/api')
+]
+
+for module, bp_name, url_prefix in blueprints:
+    try:
+        module = __import__(module, fromlist=[bp_name])
+        blueprint = getattr(module, bp_name)
+        app.register_blueprint(blueprint, url_prefix=url_prefix)
+    except Exception as e:
+        print(f"⚠️ Erro ao registrar {bp_name}: {str(e)}")
+
+
 @app.route('/')
 def serve_frontend():
     return send_from_directory(app.static_folder, 'index.html')
@@ -127,10 +130,20 @@ def serve_static(path):
 
 @app.route('/api/health')
 def health_check():
-    return {'status': 'ok', 'database': 'connected' if database_url else 'sqlite'}, 200
+    return jsonify({
+        "status": "online",
+        "database": "postgresql" if 'postgresql' in app.config['SQLALCHEMY_DATABASE_URI'] else "sqlite"
+    }), 200
+
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    debug = os.environ.get('FLASK_ENV') == 'development'
-    print(f"🚀 Servidor iniciando na porta {port} (debug={'ON' if debug else 'OFF'})")
+    port = int(os.getenv('PORT', 5000))
+    debug = os.getenv('FLASK_ENV') == 'development'
+    
+    print("\n" + "="*50)
+    print(f"🚀 Iniciando servidor na porta {port}")
+    print(f"🔗 Banco: {app.config['SQLALCHEMY_DATABASE_URI'].split('@')[-1] if '@' in app.config['SQLALCHEMY_DATABASE_URI'] else 'SQLite'}")
+    print(f"🔒 Modo debug: {'ON' if debug else 'OFF'}")
+    print("="*50 + "\n")
+    
     app.run(host='0.0.0.0', port=port, debug=debug)
