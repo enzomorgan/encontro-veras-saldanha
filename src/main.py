@@ -3,9 +3,7 @@ import subprocess
 import pkg_resources
 import os
 
-# =============================================
-# VERIFICAÇÃO AUTOMÁTICA DE DEPENDÊNCIAS
-# =============================================
+
 DEPENDENCIAS_NECESSARIAS = [
     'flask',
     'flask-cors',
