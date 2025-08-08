@@ -1,9 +1,13 @@
 services:
   - type: web
     name: encontro-veras-saldanha-backend
+    region: oregon  
     env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn src.main:app
+    pythonVersion: "3.9.16"  
+    buildCommand: |
+      pip install -r requirements.txt
+      python src/manage.py create_tables  # Opcional: para criar tabelas no build
+    startCommand: gunicorn --worker-class gevent --workers 1 src.main:app
     staticFiles:
       - path: /static
         destination: src/static
@@ -11,6 +15,12 @@ services:
       - key: FLASK_ENV
         value: production
       - key: DATABASE_URL
-        generateValue: true
+        fromDatabase:
+          name: veras-saldanha-db  
+          property: connectionString
       - key: JWT_SECRET_KEY
         generateValue: true
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    healthCheckPath: /api/health  
+    plan: free  
