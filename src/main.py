@@ -58,8 +58,15 @@ with app.app_context():
     from src.models.reserva import Reserva
     from src.models.admin import Admin, AuditLog
     
-    db.create_all()
-    print("✅ Banco de dados criado!")
+   with app.app_context():
+    try:
+        db.create_all()
+        print("✅ Banco de dados criado!")
+    except Exception as e:
+        print(f"❌ Erro ao criar banco de dados: {str(e)}")
+        # Opcional: criar diretório se não existir
+        if 'unable to open database file' in str(e):
+            print("Possível problema de permissão/caminho do SQLite")
 
 # Rotas
 @app.route('/')
