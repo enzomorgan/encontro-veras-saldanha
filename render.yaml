@@ -4,9 +4,10 @@ services:
     region: oregon
     env: python
     pythonVersion: "3.12.3"
-    buildCommand: |
-      pip install -r requirements.txt
-      python src/manage.py create_tables
+   buildCommand: |
+  pip install --upgrade pip
+  pip install -r requirements.txt
+  python src/manage.py create_tables
     startCommand: gunicorn --worker-class gevent --workers 1 src.main:app  
     staticFiles:
       - path: /static
