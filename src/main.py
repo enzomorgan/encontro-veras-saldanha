@@ -18,12 +18,16 @@ app.config['SECRET_KEY'] = secret_key
 # Habilitar CORS
 CORS(app, origins=['*'])
 
-# Configuração do banco de dados
+# Configuração do banco de dados (modificado para funcionar no Render)
 database_url = os.environ.get('DATABASE_URL')
 if database_url:
-    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    # Corrige para PostgreSQL (algumas versões usam 'postgres://' que não é mais suportado)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url.replace('postgres://', 'postgresql://')
 else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}"
+    # Caminho absoluto onde o Render permite escrita para SQLite
+    db_path = os.path.join(os.path.dirname(__file__), 'instance')
+    os.makedirs(db_path, exist_ok=True)  # Garante que o diretório existe
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(db_path, "app.db")}'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -50,7 +54,7 @@ app.register_blueprint(status_bp)
 app.register_blueprint(admin_auth_bp, url_prefix='/api')
 app.register_blueprint(admin_dashboard_bp, url_prefix='/api')
 
-# Criação das tabelas
+# Criação das tabelas com tratamento de erros
 with app.app_context():
     from src.models.user import User
     from src.models.pedido import Pedido
@@ -58,15 +62,17 @@ with app.app_context():
     from src.models.reserva import Reserva
     from src.models.admin import Admin, AuditLog
     
-   with app.app_context():
     try:
         db.create_all()
-        print("✅ Banco de dados criado!")
+        print("✅ Banco de dados criado com sucesso!")
     except Exception as e:
         print(f"❌ Erro ao criar banco de dados: {str(e)}")
-        # Opcional: criar diretório se não existir
         if 'unable to open database file' in str(e):
-            print("Possível problema de permissão/caminho do SQLite")
+            print("🔧 Dica: Problema de permissão/caminho do SQLite. Verifique se o diretório 'instance' existe e tem permissões de escrita.")
+        elif 'already exists' in str(e):
+            print("ℹ️ As tabelas já existem no banco de dados.")
+        else:
+            print("⚠️ Erro desconhecido ao acessar o banco de dados")
 
 # Rotas
 @app.route('/')
@@ -82,7 +88,7 @@ def serve_static(path):
 
 @app.route('/api/health')
 def health_check():
-    return {'status': 'ok'}, 200
+    return {'status': 'ok', 'database': 'connected' if database_url else 'sqlite'}, 200
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
