@@ -4,6 +4,9 @@ services:
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn src.main:app
+    staticFiles:
+      - path: /static
+        destination: src/static
     envVars:
       - key: FLASK_ENV
         value: production
@@ -11,4 +14,3 @@ services:
         generateValue: true
       - key: JWT_SECRET_KEY
         generateValue: true
-

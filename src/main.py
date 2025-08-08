@@ -1,5 +1,7 @@
 import os
 import sys
+from werkzeug.exceptions import NotFound
+
 # DON'T CHANGE THIS !!!
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
@@ -15,10 +17,15 @@ from src.routes.status import status_bp
 from src.routes.admin_auth import admin_auth_bp
 from src.routes.admin_dashboard import admin_dashboard_bp
 
-app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 
-# Configuração para produção
-app.config['SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'encontro-veras-saldanha-2026-secret-key')
+app = Flask(__name__, static_folder='static')
+
+# Configuração do SECRET_KEY obrigatória no ambiente
+secret_key = os.environ.get('JWT_SECRET_KEY')
+if not secret_key:
+    raise RuntimeError("JWT_SECRET_KEY não definida. Defina essa variável no ambiente de produção.")
+app.config['SECRET_KEY'] = secret_key
+
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
 # Habilitar CORS para permitir requisições do frontend
@@ -37,40 +44,22 @@ app.register_blueprint(admin_dashboard_bp, url_prefix='/api')
 # Configuração do banco de dados
 database_url = os.environ.get('DATABASE_URL')
 if database_url:
-    # Produção - usar PostgreSQL do Render
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 else:
-    # Desenvolvimento - usar SQLite
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 with app.app_context():
-    # Importar modelos na ordem correta (primeiro User, depois os que dependem dele)
     from src.models.user import User
     from src.models.pedido import Pedido
     from src.models.pagamento import Pagamento
     from src.models.reserva import Reserva
     from src.models.admin import Admin, AuditLog
     
-    # Criar todas as tabelas
     db.create_all()
     print("Banco de dados criado com sucesso!")
-    
-    # Criar super admin padrão se não existir
-    super_admin = Admin.query.filter_by(email='admin@encontroveras.com').first()
-    if not super_admin:
-        super_admin = Admin(
-            nome_completo='Super Administrador',
-            email='admin@encontroveras.com',
-            nivel_acesso='super_admin'
-        )
-        super_admin.set_password('admin123456')  # Senha padrão - DEVE SER ALTERADA
-        db.session.add(super_admin)
-        db.session.commit()
-        print("Super administrador criado: admin@encontroveras.com / admin123456")
-
 
 # Servir arquivos estáticos do frontend
 @app.route('/')
@@ -79,14 +68,12 @@ def serve_frontend():
 
 @app.route('/<path:path>')
 def serve_static_files(path):
-    # Se o arquivo existe na pasta static, serve ele
     try:
         return send_from_directory(app.static_folder, path)
-    except:
-        # Se não existe, serve o index.html (para SPA routing)
+    except NotFound:
         return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
-
+    debug = os.environ.get('FLASK_ENV') == 'development'
+    app.run(host='0.0.0.0', port=port, debug=debug)
