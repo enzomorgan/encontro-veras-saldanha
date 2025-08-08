@@ -70,6 +70,10 @@ def serve_static_files(path):
         return send_from_directory(app.static_folder, path)
     except NotFound:
         return send_from_directory(app.static_folder, 'index.html')
+        
+@app.route('/api/health')
+def health_check():
+    return {'status': 'ok'}, 200
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
