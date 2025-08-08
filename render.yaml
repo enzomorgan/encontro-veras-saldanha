@@ -3,10 +3,10 @@ services:
     name: encontro-veras-saldanha-backend
     region: oregon  
     env: python
-    pythonVersion: "3.9.16"  
-    buildCommand: |
+    pythonVersion: "3.12.3"
+    buildCommand: pip install -r requirements.txt
       pip install -r requirements.txt
-      python src/manage.py create_tables  # Opcional: para criar tabelas no build
+      python src/manage.py create_tables 
     startCommand: gunicorn --worker-class gevent --workers 2 src.main:app
     staticFiles:
       - path: /static
