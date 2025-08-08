@@ -1,4 +1,45 @@
+import sys
+import subprocess
+import pkg_resources
 import os
+
+# =============================================
+# VERIFICAÇÃO AUTOMÁTICA DE DEPENDÊNCIAS
+# =============================================
+DEPENDENCIAS_NECESSARIAS = [
+    'flask',
+    'flask-cors',
+    'python-dotenv',
+    'werkzeug',
+    'pyjwt',
+    'sqlalchemy'
+]
+
+def verificar_dependencias():
+    """Verifica e instala automaticamente as dependências faltantes"""
+    faltantes = []
+    for pacote in DEPENDENCIAS_NECESSARIAS:
+        try:
+            pkg_resources.get_distribution(pacote)
+        except pkg_resources.DistributionNotFound:
+            faltantes.append(pacote)
+    
+    if faltantes:
+        print(f"🔍 Instalando dependências faltantes: {', '.join(faltantes)}")
+        try:
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', *faltantes])
+            print("✅ Dependências instaladas com sucesso!")
+        except subprocess.CalledProcessError:
+            print("❌ Erro ao instalar dependências. Execute manualmente:")
+            print(f"pip install {' '.join(faltantes)}")
+            sys.exit(1)
+
+# Executa a verificação antes de tudo
+verificar_dependencias()
+
+# =============================================
+# CÓDIGO ORIGINAL DO SEU MAIN.PY (MODIFICADO)
+# =============================================
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from werkzeug.exceptions import NotFound
@@ -21,12 +62,12 @@ CORS(app, origins=['*'])
 # Configuração do banco de dados (modificado para funcionar no Render)
 database_url = os.environ.get('DATABASE_URL')
 if database_url:
-    # Corrige para PostgreSQL (algumas versões usam 'postgres://' que não é mais suportado)
+    # Corrige para PostgreSQL
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url.replace('postgres://', 'postgresql://')
 else:
-    # Caminho absoluto onde o Render permite escrita para SQLite
+    # Caminho absoluto para SQLite
     db_path = os.path.join(os.path.dirname(__file__), 'instance')
-    os.makedirs(db_path, exist_ok=True)  # Garante que o diretório existe
+    os.makedirs(db_path, exist_ok=True)
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(db_path, "app.db")}'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -68,7 +109,7 @@ with app.app_context():
     except Exception as e:
         print(f"❌ Erro ao criar banco de dados: {str(e)}")
         if 'unable to open database file' in str(e):
-            print("🔧 Dica: Problema de permissão/caminho do SQLite. Verifique se o diretório 'instance' existe e tem permissões de escrita.")
+            print("🔧 Dica: Verifique as permissões do diretório 'instance'")
         elif 'already exists' in str(e):
             print("ℹ️ As tabelas já existem no banco de dados.")
         else:
@@ -93,4 +134,5 @@ def health_check():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_ENV') == 'development'
+    print(f"🚀 Servidor iniciando na porta {port} (debug={'ON' if debug else 'OFF'})")
     app.run(host='0.0.0.0', port=port, debug=debug)
