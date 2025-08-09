@@ -2,6 +2,7 @@ import sys
 import subprocess
 import pkg_resources
 import os
+import logging
 from werkzeug.exceptions import HTTPException
 from dotenv import load_dotenv
 
