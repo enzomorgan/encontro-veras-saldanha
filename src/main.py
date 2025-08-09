@@ -47,16 +47,17 @@ from werkzeug.exceptions import NotFound, InternalServerError
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 
+# Configuração de logging robusta
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler(sys.stdout),  
-        logging.FileHandler('api.log')      
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler('api.log')
     ]
 )
-
-app.logger.info("✅ Logging configurado") 
+logger = logging.getLogger(__name__)
+app.logger.info("✅ Logging configurado")
 
 # Configurações otimizadas para Render
 app.config.update(
@@ -84,19 +85,39 @@ CORS(app, resources={
         "expose_headers": ["X-Total-Count"],
         "supports_credentials": True,
         "max_age": 86400
+    },
+    r"/assets/*": {
+        "origins": ["*"],
+        "methods": ["GET"],
+        "supports_credentials": False,
+        "max_age": 31536000  # 1 ano para assets
     }
 })
+
+# Rota dedicada para assets com headers CORS
+@app.route('/assets/<path:filename>')
+def serve_asset(filename):
+    try:
+        response = send_from_directory(os.path.join(app.static_folder, 'assets'), filename)
+        # Headers importantes para assets
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+        response.headers['Cache-Control'] = 'public, max-age=31536000'  # 1 ano de cache
+        return response
+    except NotFound:
+        return jsonify({"error": "Asset não encontrado"}), 404
 
 # Middleware para log de requisições
 @app.after_request
 def after_request(response):
     """Log básico para diagnóstico"""
-    print(f"[{request.method}] {request.path} - {response.status_code}")
+    logger.info(f"[{request.method}] {request.path} - {response.status_code}")
     return response
 
 # Handlers de erro aprimorados
 @app.errorhandler(404)
 def not_found(e):
+    logger.warning(f"404 - Página não encontrada: {request.path}")
     return jsonify({
         "error": "not_found",
         "message": "Endpoint não existe"
@@ -104,6 +125,7 @@ def not_found(e):
 
 @app.errorhandler(500)
 def internal_error(e):
+    logger.error(f"500 - Erro interno: {str(e)}")
     return jsonify({
         "error": "internal_server_error",
         "message": "Erro no processamento da requisição"
@@ -115,9 +137,7 @@ def handle_exception(e):
     if isinstance(e, HTTPException):
         return e
     
-    # Log detalhado no servidor
-    print(f"⚠️ ERRO NÃO TRATADO: {str(e)}", flush=True)
-    
+    logger.error(f"⚠️ ERRO NÃO TRATADO: {str(e)}", exc_info=True)
     return jsonify({
         "error": "server_error",
         "message": "Ocorreu um erro inesperado"
@@ -134,7 +154,7 @@ blueprints = [
     ('src.routes.pedidos', 'pedidos_bp', '/api/pedidos'),
     ('src.routes.pagamentos', 'pagamentos_bp', '/api/pagamentos'),
     ('src.routes.reservas', 'reservas_bp', '/api/reservas'),
-    ('src.routes.status', 'status_bp', '/api/status'),  # Rota explícita para status
+    ('src.routes.status', 'status_bp', '/api/status'),
     ('src.routes.admin_auth', 'admin_auth_bp', '/api/admin'),
     ('src.routes.admin_dashboard', 'admin_dashboard_bp', '/api/admin/dashboard')
 ]
@@ -144,9 +164,9 @@ for module, bp_name, url_prefix in blueprints:
         module = __import__(module, fromlist=[bp_name])
         blueprint = getattr(module, bp_name)
         app.register_blueprint(blueprint, url_prefix=url_prefix)
-        print(f"✅ Blueprint registrado: {bp_name}")
+        logger.info(f"✅ Blueprint registrado: {bp_name}")
     except Exception as e:
-        print(f"❌ Falha ao registrar {bp_name}: {str(e)}", flush=True)
+        logger.error(f"❌ Falha ao registrar {bp_name}: {str(e)}")
         if bp_name == 'status_bp':  # Critical for health checks
             @app.route('/api/status')
             def fallback_status():
@@ -170,18 +190,19 @@ def health_check():
     return jsonify({
         "status": "online",
         "database": "postgresql" if 'postgresql' in app.config['SQLALCHEMY_DATABASE_URI'] else "sqlite",
-        "environment": os.getenv('FLASK_ENV', 'production')
+        "environment": os.getenv('FLASK_ENV', 'production'),
+        "assets_config": "optimized"  # Indica que as novas configurações estão ativas
     }), 200
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 10000))  # Porta padrão da Render
     debug = os.getenv('FLASK_ENV') == 'development'
     
-    print("\n" + "="*50)
-    print(f"🚀 Iniciando servidor na porta {port}")
-    print(f"🔗 Banco: {'PostgreSQL' if 'postgresql' in app.config['SQLALCHEMY_DATABASE_URI'] else 'SQLite'}")
-    print(f"🌐 CORS habilitado para: {CORS_ORIGINS}")
-    print(f"🔒 Modo debug: {'ON' if debug else 'OFF'}")
-    print("="*50 + "\n")
+    logger.info("\n" + "="*50)
+    logger.info(f"🚀 Iniciando servidor na porta {port}")
+    logger.info(f"🔗 Banco: {'PostgreSQL' if 'postgresql' in app.config['SQLALCHEMY_DATABASE_URI'] else 'SQLite'}")
+    logger.info(f"🌐 CORS habilitado para: {CORS_ORIGINS}")
+    logger.info(f"🔒 Modo debug: {'ON' if debug else 'OFF'}")
+    logger.info("="*50 + "\n")
     
     app.run(host='0.0.0.0', port=port, debug=debug)
