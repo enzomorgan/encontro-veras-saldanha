@@ -46,6 +46,17 @@ from werkzeug.exceptions import NotFound, InternalServerError
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout),  
+        logging.FileHandler('api.log')      
+    ]
+)
+
+app.logger.info("✅ Logging configurado") 
+
 # Configurações otimizadas para Render
 app.config.update(
     MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB
