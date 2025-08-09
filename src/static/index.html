@@ -1,40 +1,82 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VI Encontro da Família Veras & Saldanha - Mossoró 2026</title>
-    <link rel="stylesheet" href="/assets/index-Dy54L_lS.css">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/assets/index-BuJMh_j5.js"></script>
-    <script>
-      // Verificação básica se os recursos carregaram
-      document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM totalmente carregado e analisado');
-        
-        // Verifica se o elemento root existe
-        if (!document.getElementById('root')) {
-          console.error('Elemento #root não encontrado!');
-          document.body.innerHTML = '<h1>Erro: Elemento raiz não encontrado</h1>';
-        }
-      });
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VI Encontro da Família Veras & Saldanha - Mossoró 2026</title>
+  <meta name="description" content="Site oficial do VI Encontro da Família Veras & Saldanha em Mossoró-RN, 2026">
+  
+  <!-- Pré-carregamento -->
+  <link rel="preload" href="/assets/index-Dy54L_lS.css" as="style">
+  <link rel="preload" href="/assets/index-BuJMh_j5.js" as="script">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/index-Dy54L_lS.css">
+  
+  <!-- Meta Social -->
+  <meta property="og:title" content="VI Encontro Veras & Saldanha 2026">
+  <meta property="og:description" content="11 de julho de 2026 | Requinte Buffet">
+  <meta property="og:image" content="/assets/social-share.jpg">
+  <meta property="og:url" content="https://encontro-veras-saldanha.onrender.com">
+</head>
+<body>
+  <div id="root">
+    <div class="loading-screen" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+      <div style="text-align: center;">
+        <h1>VI Encontro da Família Veras & Saldanha</h1>
+        <p>Carregando...</p>
+      </div>
+    </div>
+  </div>
 
-      // Fallback caso o JavaScript não carregue
+  <script type="module" src="/assets/index-BuJMh_j5.js"></script>
+  
+  <script>
+    // Verificação de carregamento
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM carregado');
+      
+      // Remove loading screen quando o app montar
+      setTimeout(() => {
+        const loader = document.querySelector('.loading-screen');
+        if (loader) loader.style.display = 'none';
+      }, 1000);
+    });
+
+    // Fallback avançado
+    window.addEventListener('load', function() {
       setTimeout(function() {
-        if (document.getElementById('root') && document.getElementById('root').innerHTML === '') {
-          document.body.innerHTML = `
+        const root = document.getElementById('root');
+        if (root && root.children.length <= 1) { // Apenas o loader
+          root.innerHTML = `
             <div style="padding: 2rem; text-align: center; font-family: sans-serif;">
-              <h1>VI Encontro da Família Veras & Saldanha</h1>
-              <h2>Mossoró 2026</h2>
-              <p>O site está carregando, por favor aguarde...</p>
-              <p>Se esta mensagem persistir, recarregue a página.</p>
+              <h1>Problema no carregamento</h1>
+              <p>Por favor, recarregue a página ou tente novamente mais tarde.</p>
+              <button onclick="location.reload()" style="padding: 10px 20px; margin-top: 20px;">
+                Recarregar Página
+              </button>
             </div>
           `;
         }
-      }, 3000);
-    </script>
-  </body>
+      }, 5000);
+    });
+
+    // Monitoramento de erros
+    window.addEventListener('error', function(e) {
+      console.error('Erro capturado:', e.error);
+      if (navigator.onLine) { // Só reporta se estiver online
+        fetch('/api/log-client-error', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            error: e.message,
+            stack: e.error?.stack,
+            url: location.href
+          })
+        });
+      }
+    });
+  </script>
+</body>
 </html>
