@@ -113,6 +113,14 @@
         loader.style.display = 'none';
       }
     }, 5000);
+
+    // Adicionando sugestão para corrigir os avisos de autocomplete
+    document.addEventListener('DOMContentLoaded', function() {
+      console.info('Dica: Para corrigir os avisos de autocomplete, adicione:');
+      console.info('No campo de login: autocomplete="current-password"');
+      console.info('Nos campos de cadastro: autocomplete="new-password"');
+      console.info('No campo de email: autocomplete="username"');
+    });
   </script>
 
   <style>
@@ -120,6 +128,60 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    /* Estilo temporário para visualização dos campos corrigidos */
+    .temp-form-example {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+      display: none; /* Remova esta linha para visualizar o exemplo */
+    }
   </style>
+
+  <!-- Exemplo visual dos campos corrigidos -->
+  <div class="temp-form-example">
+    <h3>Exemplo de Campos Corrigidos</h3>
+    
+    <!-- Login -->
+    <div style="margin-bottom: 15px;">
+      <label for="temp-login-password">Senha (Login):</label>
+      <input 
+        type="password"
+        id="temp-login-password"
+        autocomplete="current-password"
+        placeholder="**********"
+        style="width: 100%; padding: 8px; margin-top: 5px;"
+      >
+    </div>
+    
+    <!-- Cadastro -->
+    <div style="margin-bottom: 15px;">
+      <label for="temp-signup-password">Nova Senha:</label>
+      <input 
+        type="password"
+        id="temp-signup-password"
+        autocomplete="new-password"
+        placeholder="**********"
+        style="width: 100%; padding: 8px; margin-top: 5px;"
+      >
+    </div>
+    
+    <!-- Confirmação -->
+    <div>
+      <label for="temp-confirm-password">Confirme a Senha:</label>
+      <input 
+        type="password"
+        id="temp-confirm-password"
+        autocomplete="new-password"
+        placeholder="**********"
+        style="width: 100%; padding: 8px; margin-top: 5px;"
+      >
+    </div>
+  </div>
 </body>
 </html>
