@@ -1,69 +1,181 @@
-<!-- Exemplo visual dos campos corrigidos -->
-<div class="temp-form-example">
-  <h3>Exemplo de Campos Corrigidos</h3>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VI Encontro da Família Veras & Saldanha - Mossoró 2026</title>
+  <meta name="description" content="Site oficial do VI Encontro da Família Veras & Saldanha em Mossoró-RN, 2026">
 
-  <!-- Formulário de Login -->
-  <form action="/login" method="post" autocomplete="on" style="margin-bottom: 15px;">
-    <label for="login-username">Usuário ou Email:</label>
-    <input
-      type="text"
-      id="login-username"
-      name="username"
-      autocomplete="username"
-      placeholder="seuemail@exemplo.com"
-      style="width: 100%; padding: 8px; margin-top: 5px;"
-      required
-    >
+  <link rel="preload" href="/assets/index-Dy54L_lS.css" as="style" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="/assets/index-Dy54L_lS.css"></noscript>
+  <link rel="preload" href="/assets/index-BuJMh_j5.js" as="script" crossorigin="anonymous">
 
-    <label for="login-password">Senha:</label>
-    <input
-      type="password"
-      id="login-password"
-      name="password"
-      autocomplete="current-password"
-      placeholder="**********"
-      style="width: 100%; padding: 8px; margin-top: 5px;"
-      required
-    >
+  <meta property="og:title" content="VI Encontro Veras & Saldanha 2026">
+  <meta property="og:description" content="11 de julho de 2026 | Requinte Buffet">
+  <meta property="og:image" content="/assets/social-share.jpg">
+  <meta property="og:url" content="https://encontro-veras-saldanha.onrender.com">
 
-    <button type="submit" style="margin-top: 10px;">Entrar</button>
-  </form>
+  <link rel="preconnect" href="https://encontro-veras-saldanha.onrender.com">
+  <link rel="dns-prefetch" href="https://encontro-veras-saldanha.onrender.com">
+</head>
+<body>
+  <div id="root">
+    <div class="loading-screen" style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #f5f5f5;">
+      <div style="text-align: center; padding: 2rem;">
+        <h1 style="color: #2c3e50; margin-bottom: 1rem;">VI Encontro da Família Veras & Saldanha</h1>
+        <div style="display: inline-block; width: 50px; height: 50px; border: 5px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: #3498db; animation: spin 1s linear infinite;"></div>
+        <p style="margin-top: 1rem; color: #7f8c8d;">Carregando...</p>
+      </div>
+    </div>
+  </div>
 
-  <!-- Formulário de Cadastro -->
-  <form action="/cadastro" method="post" autocomplete="on">
-    <label for="signup-username">Usuário ou Email:</label>
-    <input
-      type="text"
-      id="signup-username"
-      name="username"
-      autocomplete="username"
-      placeholder="seuemail@exemplo.com"
-      style="width: 100%; padding: 8px; margin-top: 5px;"
-      required
-    >
+  <script>
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.type = 'module';
+        script.crossOrigin = 'anonymous';
+        script.onload = resolve;
+        script.onerror = () => {
+          reject(new Error(`Falha ao carregar o script: ${src}`));
+          showErrorFallback();
+        };
+        document.body.appendChild(script);
+      });
+    }
 
-    <label for="signup-password">Nova Senha:</label>
-    <input
-      type="password"
-      id="signup-password"
-      name="password"
-      autocomplete="new-password"
-      placeholder="**********"
-      style="width: 100%; padding: 8px; margin-top: 5px;"
-      required
-    >
+    function showErrorFallback() {
+      const root = document.getElementById('root');
+      if (root) {
+        root.innerHTML = `
+          <div style="padding: 2rem; text-align: center; font-family: sans-serif;">
+            <h1 style="color: #e74c3c;">Problema no carregamento</h1>
+            <p>Por favor, recarregue a página ou tente novamente mais tarde.</p>
+            <button onclick="location.reload()" 
+              style="padding: 10px 20px; margin-top: 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+              Recarregar Página
+            </button>
+            <p style="margin-top: 20px; font-size: 0.9em; color: #95a5a6;">
+              Se o problema persistir, entre em contato com os organizadores.
+            </p>
+          </div>
+        `;
+      }
+    }
 
-    <label for="confirm-password">Confirme a Senha:</label>
-    <input
-      type="password"
-      id="confirm-password"
-      name="confirm_password"
-      autocomplete="new-password"
-      placeholder="**********"
-      style="width: 100%; padding: 8px; margin-top: 5px;"
-      required
-    >
+    loadScript('/assets/index-BuJMh_j5.js').catch(err => {
+      console.error('Erro no carregamento:', err);
+    });
 
-    <button type="submit" style="margin-top: 10px;">Cadastrar</button>
-  </form>
-</div>
+    window.addEventListener('error', function(e) {
+      console.error('Erro capturado:', e.error);
+      if (navigator.onLine) {
+        fetch('/api/log-client-error', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            error: e.message,
+            stack: e.error?.stack,
+            url: location.href,
+            timestamp: new Date().toISOString()
+          })
+        }).catch(err => console.error('Falha ao reportar erro:', err));
+      }
+    });
+
+    setTimeout(() => {
+      const loader = document.querySelector('.loading-screen');
+      if (loader && document.getElementById('root').children.length <= 1) {
+        showErrorFallback();
+      } else if (loader) {
+        loader.style.display = 'none';
+      }
+    }, 5000);
+
+    document.addEventListener('DOMContentLoaded', function() {
+      console.info('Dica: Para corrigir os avisos de autocomplete, adicione:');
+      console.info('No campo de login: autocomplete="current-password"');
+      console.info('Nos campos de cadastro: autocomplete="new-password"');
+      console.info('No campo de email: autocomplete="username"');
+    });
+  </script>
+
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .temp-form-example {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+      display: none;
+    }
+  </style>
+
+  <!-- Exemplo visual dos campos corrigidos -->
+  <div class="temp-form-example">
+    <h3>Exemplo de Campos Corrigidos</h3>
+
+    <!-- Login -->
+    <form id="login-form" method="post" action="/api/login" style="display: contents;">
+      <div style="margin-bottom: 15px;">
+        <label for="temp-login-username">Usuário:</label>
+        <input type="text" id="temp-login-username" name="username" autocomplete="username" placeholder="Seu usuário" style="width: 100%; padding: 8px; margin-top: 5px;" required>
+      </div>
+      <div style="margin-bottom: 15px;">
+        <label for="temp-login-password">Senha:</label>
+        <input type="password" id="temp-login-password" name="password" autocomplete="current-password" placeholder="**********" style="width: 100%; padding: 8px; margin-top: 5px;" required>
+      </div>
+    </form>
+
+    <!-- Cadastro -->
+    <form id="signup-form" method="post" action="/api/cadastro" style="display: contents;">
+      <div style="margin-bottom: 15px;">
+        <label for="temp-signup-username">Usuário:</label>
+        <input type="text" id="temp-signup-username" name="username" autocomplete="username" placeholder="Seu usuário" style="width: 100%; padding: 8px; margin-top: 5px;" required>
+      </div>
+      <div style="margin-bottom: 15px;">
+        <label for="temp-signup-password">Nova Senha:</label>
+        <input type="password" id="temp-signup-password" name="password" autocomplete="new-password" placeholder="**********" style="width: 100%; padding: 8px; margin-top: 5px;" required>
+      </div>
+      <div>
+        <label for="temp-confirm-password">Confirme a Senha:</label>
+        <input type="password" id="temp-confirm-password" name="confirm_password" autocomplete="new-password" placeholder="**********" style="width: 100%; padding: 8px; margin-top: 5px;" required>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Envio assíncrono sem recarregar
+    async function handleFormSubmit(formId) {
+      const form = document.getElementById(formId);
+      if (!form) return;
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        try {
+          const response = await fetch(form.action, {
+            method: form.method,
+            body: formData
+          });
+          if (!response.ok) throw new Error(await response.text());
+          alert('Operação realizada com sucesso!');
+        } catch (err) {
+          alert('Erro na conexão. Tente novamente.');
+          console.error(err);
+        }
+      });
+    }
+    handleFormSubmit('login-form');
+    handleFormSubmit('signup-form');
+  </script>
+</body>
+</html>
