@@ -7,20 +7,27 @@ import re
 from functools import wraps
 from werkzeug.exceptions import BadRequest, Unauthorized, Conflict
 import logging
+from werkzeug.security import generate_password_hash
 
 logger = logging.getLogger(__name__)
-auth_bp = Blueprint('auth_bp', __name__)  # Nome consistente com main.py
+auth_bp = Blueprint('auth_bp', __name__, url_prefix='/api/auth')
 
-# Configurações (melhor prática para constantes)
+# Configurações
 JWT_ALGORITHM = 'HS256'
 TOKEN_EXPIRATION_HOURS = 24 * 7  # 7 dias em horas
 
+# Validação da chave secreta JWT
+JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+if not JWT_SECRET_KEY:
+    logger.critical("Variável JWT_SECRET_KEY não configurada")
+    raise RuntimeError("Configuração de segurança faltando")
+
 class AuthValidation:
-    """Classe dedicada para validações de autenticação"""
+    """Classe para validações de autenticação"""
     
     @staticmethod
     def validate_email(email):
-        """Validação robusta de email com regex atualizado"""
+        """Validação robusta de email"""
         if not isinstance(email, str):
             return False
         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,63}$'
@@ -62,7 +69,7 @@ class AuthValidation:
             errors['email'] = 'Formato inválido'
             
         if 'password' in data and not AuthValidation.validate_password(data['password']):
-            errors['password'] = 'Requisitos não atendidos'
+            errors['password'] = 'Senha deve ter 8+ caracteres, 1 maiúscula e 1 número'
             
         if all(f in data for f in ['password', 'confirmPassword']) and data['password'] != data['confirmPassword']:
             errors['confirmPassword'] = 'Senhas não coincidem'
@@ -79,12 +86,12 @@ def generate_token(user_id):
     """Geração segura de token JWT"""
     try:
         payload = {
-            'sub': user_id,  # Standard JWT claim
+            'sub': user_id,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=TOKEN_EXPIRATION_HOURS),
             'iat': datetime.datetime.utcnow(),
-            'iss': 'encontro-veras-saldanha-api'  # Identificador da aplicação
+            'iss': 'encontro-veras-saldanha-api'
         }
-        return jwt.encode(payload, os.getenv('JWT_SECRET_KEY'), algorithm=JWT_ALGORITHM)
+        return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
     except Exception as e:
         logger.error(f"Falha na geração de token: {str(e)}")
         raise
@@ -117,9 +124,11 @@ def cadastro():
         raise BadRequest('Content-Type deve ser application/json')
     
     data = request.get_json()
-    validation_errors = AuthValidation.validate_user_data(data)
+    logger.debug(f"Dados recebidos: {data}")
     
+    validation_errors = AuthValidation.validate_user_data(data)
     if validation_errors:
+        logger.warning(f"Validação falhou: {validation_errors}")
         return jsonify({
             'error': 'Dados inválidos',
             'details': validation_errors
@@ -135,24 +144,29 @@ def cadastro():
         user = User(
             nome_completo=data['nomeCompleto'].strip(),
             email=email,
+            password_hash=generate_password_hash(data['password']),
             descendencia=data['descendencia'].lower(),
             idade=data['idade'],
             cidade_residencia=data['cidadeResidencia'].strip()
         )
-        user.set_password(data['password'])
         
         db.session.add(user)
         db.session.commit()
+        logger.info(f"Usuário cadastrado: {email}")
         
         return jsonify({
             'message': 'Cadastro realizado com sucesso',
-            'user': user.to_dict(),
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'nome': user.nome_completo
+            },
             'token': generate_token(user.id)
         }), 201
         
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Erro no cadastro: {str(e)}")
+        logger.error(f"Erro no cadastro: {str(e)}", exc_info=True)
         raise
 
 @auth_bp.route('/login', methods=['POST'])
@@ -174,12 +188,13 @@ def login():
     if not user or not user.check_password(password):
         raise Unauthorized('Credenciais inválidas')
     
-    if not user.is_active:
-        raise Unauthorized('Conta desativada')
-    
     return jsonify({
         'message': 'Login realizado com sucesso',
-        'user': user.to_dict(),
+        'user': {
+            'id': user.id,
+            'email': user.email,
+            'nome': user.nome_completo
+        },
         'token': generate_token(user.id)
     }), 200
 
@@ -195,15 +210,19 @@ def verify_token():
         raise BadRequest('Token não fornecido')
     
     try:
-        payload = jwt.decode(token, os.getenv('JWT_SECRET_KEY'), algorithms=[JWT_ALGORITHM])
-        user = User.query.get(payload['sub'])  # Usa claim standard 'sub'
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        user = User.query.get(payload['sub'])
         
-        if not user or not user.is_active:
+        if not user:
             raise Unauthorized('Token inválido')
         
         return jsonify({
             'valid': True,
-            'user': user.to_dict()
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'nome': user.nome_completo
+            }
         }), 200
         
     except jwt.ExpiredSignatureError:
@@ -222,10 +241,10 @@ def token_required(f):
         token = auth_header.split(" ")[1]
         
         try:
-            payload = jwt.decode(token, os.getenv('JWT_SECRET_KEY'), algorithms=[JWT_ALGORITHM])
+            payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
             current_user = User.query.get(payload['sub'])
             
-            if not current_user or not current_user.is_active:
+            if not current_user:
                 raise Unauthorized('Token inválido')
                 
             return f(current_user, *args, **kwargs)
