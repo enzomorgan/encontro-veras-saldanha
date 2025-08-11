@@ -1,187 +1,69 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VI Encontro da Família Veras & Saldanha - Mossoró 2026</title>
-  <meta name="description" content="Site oficial do VI Encontro da Família Veras & Saldanha em Mossoró-RN, 2026">
-  
-  <!-- Pré-carregamento otimizado -->
-  <link 
-    rel="preload" 
-    href="/assets/index-Dy54L_lS.css" 
-    as="style"
-    crossorigin="anonymous"
-    onload="this.onload=null;this.rel='stylesheet'"
-  >
-  <noscript><link rel="stylesheet" href="/assets/index-Dy54L_lS.css"></noscript>
-  
-  <link 
-    rel="preload" 
-    href="/assets/index-BuJMh_j5.js" 
-    as="script"
-    crossorigin="anonymous"
-  >
-  
-  <!-- Meta Social -->
-  <meta property="og:title" content="VI Encontro Veras & Saldanha 2026">
-  <meta property="og:description" content="11 de julho de 2026 | Requinte Buffet">
-  <meta property="og:image" content="/assets/social-share.jpg">
-  <meta property="og:url" content="https://encontro-veras-saldanha.onrender.com">
-  
-  <!-- Preconnect para melhor performance -->
-  <link rel="preconnect" href="https://encontro-veras-saldanha.onrender.com">
-  <link rel="dns-prefetch" href="https://encontro-veras-saldanha.onrender.com">
-</head>
-<body>
-  <div id="root">
-    <div class="loading-screen" style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #f5f5f5;">
-      <div style="text-align: center; padding: 2rem;">
-        <h1 style="color: #2c3e50; margin-bottom: 1rem;">VI Encontro da Família Veras & Saldanha</h1>
-        <div style="display: inline-block; width: 50px; height: 50px; border: 5px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: #3498db; animation: spin 1s linear infinite;"></div>
-        <p style="margin-top: 1rem; color: #7f8c8d;">Carregando...</p>
-      </div>
-    </div>
-  </div>
+<!-- Exemplo visual dos campos corrigidos -->
+<div class="temp-form-example">
+  <h3>Exemplo de Campos Corrigidos</h3>
 
-  <!-- Script com fallback robusto -->
-  <script>
-    function loadScript(src) {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.type = 'module';
-        script.crossOrigin = 'anonymous';
-        script.onload = resolve;
-        script.onerror = () => {
-          reject(new Error(`Falha ao carregar o script: ${src}`));
-          showErrorFallback();
-        };
-        document.body.appendChild(script);
-      });
-    }
+  <!-- Formulário de Login -->
+  <form action="/login" method="post" autocomplete="on" style="margin-bottom: 15px;">
+    <label for="login-username">Usuário ou Email:</label>
+    <input
+      type="text"
+      id="login-username"
+      name="username"
+      autocomplete="username"
+      placeholder="seuemail@exemplo.com"
+      style="width: 100%; padding: 8px; margin-top: 5px;"
+      required
+    >
 
-    function showErrorFallback() {
-      const root = document.getElementById('root');
-      if (root) {
-        root.innerHTML = `
-          <div style="padding: 2rem; text-align: center; font-family: sans-serif;">
-            <h1 style="color: #e74c3c;">Problema no carregamento</h1>
-            <p>Por favor, recarregue a página ou tente novamente mais tarde.</p>
-            <button onclick="location.reload()" 
-              style="padding: 10px 20px; margin-top: 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
-              Recarregar Página
-            </button>
-            <p style="margin-top: 20px; font-size: 0.9em; color: #95a5a6;">
-              Se o problema persistir, entre em contato com os organizadores.
-            </p>
-          </div>
-        `;
-      }
-    }
+    <label for="login-password">Senha:</label>
+    <input
+      type="password"
+      id="login-password"
+      name="password"
+      autocomplete="current-password"
+      placeholder="**********"
+      style="width: 100%; padding: 8px; margin-top: 5px;"
+      required
+    >
 
-    // Carrega o script principal
-    loadScript('/assets/index-BuJMh_j5.js')
-      .catch(err => {
-        console.error('Erro no carregamento:', err);
-      });
+    <button type="submit" style="margin-top: 10px;">Entrar</button>
+  </form>
 
-    // Monitoramento de erros
-    window.addEventListener('error', function(e) {
-      console.error('Erro capturado:', e.error);
-      if (navigator.onLine) {
-        fetch('/api/log-client-error', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            error: e.message,
-            stack: e.error?.stack,
-            url: location.href,
-            timestamp: new Date().toISOString()
-          })
-        }).catch(err => console.error('Falha ao reportar erro:', err));
-      }
-    });
+  <!-- Formulário de Cadastro -->
+  <form action="/cadastro" method="post" autocomplete="on">
+    <label for="signup-username">Usuário ou Email:</label>
+    <input
+      type="text"
+      id="signup-username"
+      name="username"
+      autocomplete="username"
+      placeholder="seuemail@exemplo.com"
+      style="width: 100%; padding: 8px; margin-top: 5px;"
+      required
+    >
 
-    // Remove o loading screen após 5 segundos como fallback
-    setTimeout(() => {
-      const loader = document.querySelector('.loading-screen');
-      if (loader && document.getElementById('root').children.length <= 1) {
-        showErrorFallback();
-      } else if (loader) {
-        loader.style.display = 'none';
-      }
-    }, 5000);
+    <label for="signup-password">Nova Senha:</label>
+    <input
+      type="password"
+      id="signup-password"
+      name="password"
+      autocomplete="new-password"
+      placeholder="**********"
+      style="width: 100%; padding: 8px; margin-top: 5px;"
+      required
+    >
 
-    // Adicionando sugestão para corrigir os avisos de autocomplete
-    document.addEventListener('DOMContentLoaded', function() {
-      console.info('Dica: Para corrigir os avisos de autocomplete, adicione:');
-      console.info('No campo de login: autocomplete="current-password"');
-      console.info('Nos campos de cadastro: autocomplete="new-password"');
-      console.info('No campo de email: autocomplete="username"');
-    });
-  </script>
+    <label for="confirm-password">Confirme a Senha:</label>
+    <input
+      type="password"
+      id="confirm-password"
+      name="confirm_password"
+      autocomplete="new-password"
+      placeholder="**********"
+      style="width: 100%; padding: 8px; margin-top: 5px;"
+      required
+    >
 
-  <style>
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Estilo temporário para visualização dos campos corrigidos */
-    .temp-form-example {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      z-index: 1000;
-      display: none; /* Remova esta linha para visualizar o exemplo */
-    }
-  </style>
-
-  <!-- Exemplo visual dos campos corrigidos -->
-  <div class="temp-form-example">
-    <h3>Exemplo de Campos Corrigidos</h3>
-    
-    <!-- Login -->
-    <div style="margin-bottom: 15px;">
-      <label for="temp-login-password">Senha (Login):</label>
-      <input 
-        type="password"
-        id="temp-login-password"
-        autocomplete="current-password"
-        placeholder="**********"
-        style="width: 100%; padding: 8px; margin-top: 5px;"
-      >
-    </div>
-    
-    <!-- Cadastro -->
-    <div style="margin-bottom: 15px;">
-      <label for="temp-signup-password">Nova Senha:</label>
-      <input 
-        type="password"
-        id="temp-signup-password"
-        autocomplete="new-password"
-        placeholder="**********"
-        style="width: 100%; padding: 8px; margin-top: 5px;"
-      >
-    </div>
-    
-    <!-- Confirmação -->
-    <div>
-      <label for="temp-confirm-password">Confirme a Senha:</label>
-      <input 
-        type="password"
-        id="temp-confirm-password"
-        autocomplete="new-password"
-        placeholder="**********"
-        style="width: 100%; padding: 8px; margin-top: 5px;"
-      >
-    </div>
-  </div>
-</body>
-</html>
+    <button type="submit" style="margin-top: 10px;">Cadastrar</button>
+  </form>
+</div>
