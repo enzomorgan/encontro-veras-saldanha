@@ -34,8 +34,8 @@
     </div>
   </div>
 
-  <script>
-    // Função melhorada para carregar scripts
+ <script>
+    // Função corrigida para carregar scripts
     function loadScript(src, isModule = true) {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -44,13 +44,18 @@
         script.crossOrigin = 'anonymous';
         script.onload = () => resolve(script);
         script.onerror = () => {
-          console.error('Falha ao carregar o script: ${src}');
+          console.error(`Falha ao carregar o script: ${src}`);  // Template literal corrigido
           showErrorFallback();
-         reject(new Error(`Failed to load script: ${src}`));
+          reject(new Error(`Failed to load script: ${src}`));
         };
         document.body.appendChild(script);
       });
     }
+
+    // Carrega o script principal - VERIFIQUE SE ESTE CAMINHO ESTÁ CORRETO
+    loadScript('/assets/index-BuJMh_j5.js')
+      .catch(err => console.error('Erro no carregamento:', err));
+</script>
 
     // Página de fallback aprimorada
     function showErrorFallback() {
