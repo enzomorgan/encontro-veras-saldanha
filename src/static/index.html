@@ -44,7 +44,7 @@
         script.crossOrigin = 'anonymous';
         script.onload = () => resolve(script);
         script.onerror = () => {
-          console.error(Falha ao carregar o script: ${src});
+          console.error('Falha ao carregar o script: ${src}');
           showErrorFallback();
           reject(new Error(Failed to load script: ${src}));
         };
