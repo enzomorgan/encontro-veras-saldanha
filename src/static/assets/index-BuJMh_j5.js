@@ -1,5 +1,3 @@
-const API_BASE_URL = 'https://encontro-veras-saldanha-backend.onrender.com/api';
-
 // Função auxiliar para exibir mensagens de erro
 function showError(elementId, message) {
   const el = document.getElementById(elementId);
@@ -8,6 +6,9 @@ function showError(elementId, message) {
     el.style.display = message ? 'block' : 'none';
   }
 }
+
+// URL base do backend no Render
+const API_BASE_URL = 'https://encontro-veras-saldanha-backend.onrender.com';
 
 // Cadastro
 async function handleCadastro(e) {
@@ -25,7 +26,7 @@ async function handleCadastro(e) {
   };
 
   try {
-    const res = await fetch(`${API_BASE_URL}/auth/cadastro`, {
+    const res = await fetch(`${API_BASE_URL}/api/auth/cadastro`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -34,6 +35,7 @@ async function handleCadastro(e) {
     const data = await res.json();
     if (!res.ok) {
       showError('cadastro-error', data.error || 'Erro ao cadastrar');
+      if (data.details) console.error('Detalhes do erro:', data.details);
       return;
     }
 
@@ -56,7 +58,7 @@ async function handleLogin(e) {
   };
 
   try {
-    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -81,7 +83,16 @@ async function handleLogin(e) {
 
 // Eventos
 const formCadastro = document.getElementById('form-cadastro');
-if (formCadastro) formCadastro.addEventListener('submit', handleCadastro);
+if (formCadastro) {
+  formCadastro.addEventListener('submit', handleCadastro);
+  document.getElementById('cadastro-email').setAttribute('autocomplete', 'username');
+  document.getElementById('cadastro-senha').setAttribute('autocomplete', 'new-password');
+  document.getElementById('cadastro-confirmar-senha').setAttribute('autocomplete', 'new-password');
+}
 
-const formLogin = document.getElementById('login-form');
-if (formLogin) formLogin.addEventListener('submit', handleLogin);
+const formLogin = document.getElementById('form-login');
+if (formLogin) {
+  formLogin.addEventListener('submit', handleLogin);
+  document.getElementById('login-email').setAttribute('autocomplete', 'username');
+  document.getElementById('login-senha').setAttribute('autocomplete', 'current-password');
+}
