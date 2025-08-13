@@ -8,8 +8,7 @@
 
   <!-- Pré-carregamento otimizado -->
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
-  <link rel="preload" href="/assets/index-Dy54L_lS.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="/assets/index-Dy54L_lS.css"></noscript>
+  <link rel="stylesheet" href="/assets/index-Dy54L_lS.css">
   <link rel="preload" href="/assets/index-BuJMh_j5.js" as="script" crossorigin="anonymous">
 
   <!-- Meta tags para SEO e compartilhamento -->
@@ -35,18 +34,20 @@
   </div>
 
   <script>
-    // Função melhorada para carregar scripts
-    function loadScript(src, isModule = true) {
+    // Função para carregar scripts corrigida
+    function loadScript(src) {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = src;
-        if (isModule) script.type = 'module';
         script.crossOrigin = 'anonymous';
-        script.onload = () => resolve(script);
+        script.onload = () => {
+          console.log(`Script carregado: ${src}`);
+          resolve(script);
+        };
         script.onerror = () => {
-          console.error('Falha ao carregar o script: ${src}');
+          console.error(`Falha ao carregar o script: ${src}`);
           showErrorFallback();
-         reject(new Error(`Failed to load script: ${src}`));
+          reject(new Error(`Failed to load script: ${src}`));
         };
         document.body.appendChild(script);
       });
@@ -58,25 +59,45 @@
       if (!root) return;
       
       root.innerHTML = `
-    <div style="padding: 2rem; text-align: center; font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-      <h1 style="color: #e74c3c; margin-bottom: 1rem;">Problema no carregamento</h1>
-      <p style="margin-bottom: 1.5rem; line-height: 1.5;">
-        Ocorreu um erro ao carregar a página. Por favor, recarregue ou tente novamente mais tarde.
-      </p>
-      <button onclick="location.reload()" 
-        style="padding: 12px 24px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
-        Recarregar Página
-      </button>
-      <p style="margin-top: 2rem; color: #95a5a6; font-size: 0.9rem;">
-        Se o problema persistir, entre em contato com os organizadores.
-      </p>
-    </div>
-  `;
-}
+        <div style="padding: 2rem; text-align: center; font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #e74c3c; margin-bottom: 1rem;">Problema no carregamento</h1>
+          <p style="margin-bottom: 1.5rem; line-height: 1.5;">
+            Ocorreu um erro ao carregar a página. Por favor, recarregue ou tente novamente mais tarde.
+          </p>
+          <button onclick="window.location.reload()" 
+            style="padding: 12px 24px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
+            Recarregar Página
+          </button>
+          <p style="margin-top: 2rem; color: #95a5a6; font-size: 0.9rem;">
+            Se o problema persistir, entre em contato com os organizadores.
+          </p>
+        </div>
+      `;
+    }
 
-    // Carrega o script principal
-    loadScript('/assets/index-BuJMh_j5.js')
-      .catch(err => console.error('Erro no carregamento:', err));
+    // Verificação de que o app foi carregado
+    window.appLoaded = false;
+
+    // Carrega o script principal com tratamento de erros
+    document.addEventListener('DOMContentLoaded', () => {
+      const loadingTimeout = setTimeout(() => {
+        if (!window.appLoaded) {
+          showErrorFallback();
+        }
+      }, 5000);
+
+      loadScript('/assets/index-BuJMh_j5.js')
+        .then(() => {
+          window.appLoaded = true;
+          clearTimeout(loadingTimeout);
+          const loader = document.querySelector('.loading-screen');
+          if (loader) loader.style.display = 'none';
+        })
+        .catch(err => {
+          console.error('Erro no carregamento:', err);
+          clearTimeout(loadingTimeout);
+        });
+    });
 
     // Monitoramento de erros do cliente
     window.addEventListener('error', function(e) {
@@ -95,139 +116,22 @@
       }
     });
 
-    // Timeout para fallback
-    setTimeout(() => {
-      const loader = document.querySelector('.loading-screen');
-      const root = document.getElementById('root');
-      
-      if (loader && root && root.children.length <= 1) {
-        showErrorFallback();
-      } else if (loader) {
-        loader.style.display = 'none';
+    // Animação de loading
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
       }
-    }, 5000);
-
-    // Dicas para desenvolvimento
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      console.info('Dicas para formulários:');
-      console.info('- Email: autocomplete="username"');
-      console.info('- Login: autocomplete="current-password"');
-      console.info('- Cadastro: autocomplete="new-password"');
-    }
-  </script>
-
-  <style>
-    /* Animação de loading */
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    /* Exemplo de formulário (apenas para desenvolvimento) */
-    .temp-form-example {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      z-index: 1000;
-      display: none; /* Oculto por padrão */
-      font-family: sans-serif;
-    }
-    
-    .temp-form-example h3 {
-      margin-top: 0;
-      color: #2c3e50;
-    }
-    
-    .temp-form-example label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    
-    .temp-form-example input {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 15px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-  </style>
-
-  <!-- Exemplo de formulários (apenas para referência de desenvolvimento) -->
-  <div class="temp-form-example">
-    <h3>Exemplo de Campos Corrigidos</h3>
-
-    <!-- Login -->
-    <form id="login-form" method="post" action="/api/auth/login">
-      <div>
-        <label for="temp-login-username">Email:</label>
-        <input type="email" id="temp-login-username" name="email" 
-               autocomplete="username" placeholder="seu@email.com" required>
-      </div>
-      <div>
-        <label for="temp-login-password">Senha:</label>
-        <input type="password" id="temp-login-password" name="password" 
-               autocomplete="current-password" placeholder="********" required>
-      </div>
-    </form>
-
-    <!-- Cadastro -->
-    <form id="signup-form" method="post" action="/api/auth/cadastro">
-      <div>
-        <label for="temp-signup-email">Email:</label>
-        <input type="email" id="temp-signup-email" name="email" 
-               autocomplete="username" placeholder="seu@email.com" required>
-      </div>
-      <div>
-        <label for="temp-signup-password">Nova Senha:</label>
-        <input type="password" id="temp-signup-password" name="password" 
-               autocomplete="new-password" placeholder="********" required>
-      </div>
-      <div>
-        <label for="temp-confirm-password">Confirme a Senha:</label>
-        <input type="password" id="temp-confirm-password" name="confirmPassword" 
-               autocomplete="new-password" placeholder="********" required>
-      </div>
-    </form>
-  </div>
-
-  <script>
-    // Mostra o exemplo de formulário apenas em desenvolvimento
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      document.querySelector('.temp-form-example').style.display = 'block';
-      
-      // Envio assíncrono dos formulários de exemplo
-      async function handleFormSubmit(formId) {
-        const form = document.getElementById(formId);
-        if (!form) return;
-        
-        form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const formData = new FormData(form);
-          
-          try {
-            const response = await fetch(form.action, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(Object.fromEntries(formData))
-            });
-            
-            if (!response.ok) throw new Error(await response.text());
-            alert('Operação realizada com sucesso!');
-          } catch (err) {
-            alert('Erro: ' + err.message);
-            console.error('Erro no formulário:', err);
-          }
-        });
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
       }
-      
-      handleFormSubmit('login-form');
-      handleFormSubmit('signup-form');
-    }
+      .error-message {
+        animation: fadeIn 0.3s ease-out;
+      }
+    `;
+    document.head.appendChild(style);
   </script>
 </body>
 </html>
