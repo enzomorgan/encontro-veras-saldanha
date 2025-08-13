@@ -1,5 +1,3 @@
-// Ajuste para login e cadastro com backend Flask no mesmo domínio (Render)
-
 // Função auxiliar para exibir mensagens de erro
 function showError(elementId, message) {
   const el = document.getElementById(elementId);
