@@ -7,13 +7,12 @@
   <meta name="description" content="Site oficial do VI Encontro da Família Veras & Saldanha em Mossoró-RN, 2026">
 
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
-  <link rel="preload" href="/assets/index-Dy54L_lS.css?v=2" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="/assets/index-Dy54L_lS.css?v=2"></noscript>
-  <link rel="preload" href="/assets/index-BuJMh_j5.js?v=2" as="script" crossorigin="anonymous">
+  <link rel="preload" href="/static/assets/index-Dy54L_lS.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="/static/assets/index-Dy54L_lS.css"></noscript>
 
   <meta property="og:title" content="VI Encontro Veras & Saldanha 2026">
   <meta property="og:description" content="11 de julho de 2026 | Requinte Buffet">
-  <meta property="og:image" content="/assets/social-share.jpg">
+  <meta property="og:image" content="/static/assets/social-share.jpg">
   <meta property="og:url" content="https://encontro-veras-saldanha.onrender.com">
   <meta name="theme-color" content="#2c3e50">
 
@@ -31,69 +30,77 @@
     </div>
   </div>
 
-  <script src="/assets/index-BuJMh_j5.js?v=2" type="module" crossorigin="anonymous"></script>
+  <script>
+    const API_BASE_URL = 'https://encontro-veras-saldanha-backend.onrender.com';
+
+    function showErrorFallback() {
+      const root = document.getElementById('root');
+      if (!root) return;
+      root.innerHTML = `
+        <div style="padding: 2rem; text-align: center; font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #e74c3c; margin-bottom: 1rem;">Problema no carregamento</h1>
+          <p style="margin-bottom: 1.5rem; line-height: 1.5;">
+            Ocorreu um erro ao carregar a página. Por favor, recarregue ou tente novamente mais tarde.
+          </p>
+          <button onclick="location.reload()" 
+            style="padding: 12px 24px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
+            Recarregar Página
+          </button>
+        </div>
+      `;
+    }
+
+    function loadScript(src, isModule = true) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        if (isModule) script.type = 'module';
+        script.crossOrigin = 'anonymous';
+        script.onload = () => resolve(script);
+        script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+        document.body.appendChild(script);
+      });
+    }
+
+    loadScript(`${API_BASE_URL}/static/assets/index-BuJMh_j5.js`)
+      .then(() => {
+        const loader = document.querySelector('.loading-screen');
+        if (loader) loader.style.display = 'none';
+      })
+      .catch(err => {
+        console.error('Erro no carregamento do script:', err);
+        showErrorFallback();
+      });
+
+    window.addEventListener('error', function(e) {
+      console.error('Erro capturado:', e.error);
+      if (navigator.onLine) {
+        fetch(`${API_BASE_URL}/api/log-client-error`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            error: e.message,
+            stack: e.error?.stack,
+            url: location.href,
+            timestamp: new Date().toISOString()
+          })
+        }).catch(err => console.error('Falha ao reportar erro:', err));
+      }
+    });
+
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      console.info('Dicas para formulários:');
+      console.info('- Email: autocomplete="username"');
+      console.info('- Login: autocomplete="current-password"');
+      console.info('- Cadastro: autocomplete="new-password"');
+    }
+  </script>
 
   <style>
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-    .temp-form-example { position: fixed; bottom: 20px; right: 20px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; display: none; font-family: sans-serif; }
-    .temp-form-example h3 { margin-top: 0; color: #2c3e50; }
-    .temp-form-example label { display: block; margin-bottom: 5px; font-weight: bold; }
-    .temp-form-example input { width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; }
   </style>
-
-  <div class="temp-form-example">
-    <h3>Exemplo de Campos Corrigidos</h3>
-
-    <form id="login-form" method="post" action="/api/auth/login">
-      <div>
-        <label for="login-email">Email:</label>
-        <input type="email" id="login-email" name="email" autocomplete="username" placeholder="seu@email.com" required>
-      </div>
-      <div>
-        <label for="login-senha">Senha:</label>
-        <input type="password" id="login-senha" name="password" autocomplete="current-password" placeholder="********" required>
-      </div>
-    </form>
-
-    <form id="form-cadastro" method="post" action="/api/auth/cadastro">
-      <div>
-        <label for="cadastro-nome">Nome completo:</label>
-        <input type="text" id="cadastro-nome" name="nomeCompleto" placeholder="Seu nome completo" required>
-      </div>
-      <div>
-        <label for="cadastro-email">Email:</label>
-        <input type="email" id="cadastro-email" name="email" placeholder="seu@email.com" required>
-      </div>
-      <div>
-        <label for="cadastro-senha">Senha:</label>
-        <input type="password" id="cadastro-senha" name="password" placeholder="********" required>
-      </div>
-      <div>
-        <label for="cadastro-confirmar-senha">Confirme a senha:</label>
-        <input type="password" id="cadastro-confirmar-senha" name="confirmPassword" placeholder="********" required>
-      </div>
-      <div>
-        <label for="cadastro-descendencia">Descendência:</label>
-        <select id="cadastro-descendencia" name="descendencia" required>
-          <option value="veras">Veras</option>
-          <option value="saldanha">Saldanha</option>
-        </select>
-      </div>
-      <div>
-        <label for="cadastro-idade">Idade:</label>
-        <input type="number" id="cadastro-idade" name="idade" min="1" max="120" required>
-      </div>
-      <div>
-        <label for="cadastro-cidade">Cidade de residência:</label>
-        <input type="text" id="cadastro-cidade" name="cidadeResidencia" required>
-      </div>
-    </form>
-
-    <div id="cadastro-error" style="color:red; margin-bottom:10px;"></div>
-    <div id="login-error" style="color:red; margin-bottom:10px;"></div>
-  </div>
 </body>
 </html>
