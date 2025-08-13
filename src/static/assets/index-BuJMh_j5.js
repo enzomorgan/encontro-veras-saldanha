@@ -38,11 +38,11 @@ async function handleCadastro(e) {
       return;
     }
 
-    alert('Cadastro realizado com sucesso!');
-    e.target.reset();
+    showError('cadastro-error', '✅ Cadastro realizado com sucesso!');
+    document.getElementById('form-cadastro').reset();
   } catch (err) {
     console.error(err);
-    showError('cadastro-error', 'Falha de conexão com o servidor');
+    showError('cadastro-error', '❌ Falha de conexão com o servidor');
   }
 }
 
@@ -69,12 +69,14 @@ async function handleLogin(e) {
       return;
     }
 
-    alert('Login realizado com sucesso!');
+    showError('login-error', '✅ Login realizado com sucesso!');
     localStorage.setItem('token', data.token);
-    window.location.href = '/';
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 1000);
   } catch (err) {
     console.error(err);
-    showError('login-error', 'Falha de conexão com o servidor');
+    showError('login-error', '❌ Falha de conexão com o servidor');
   }
 }
 
@@ -82,9 +84,16 @@ async function handleLogin(e) {
 const formCadastro = document.getElementById('form-cadastro');
 if (formCadastro) {
   formCadastro.addEventListener('submit', handleCadastro);
+  // Autocomplete nos campos
+  document.getElementById('cadastro-email').setAttribute('autocomplete', 'username');
+  document.getElementById('cadastro-senha').setAttribute('autocomplete', 'new-password');
+  document.getElementById('cadastro-confirmar-senha').setAttribute('autocomplete', 'new-password');
 }
 
 const formLogin = document.getElementById('form-login');
 if (formLogin) {
   formLogin.addEventListener('submit', handleLogin);
+  // Autocomplete nos campos
+  document.getElementById('login-email').setAttribute('autocomplete', 'username');
+  document.getElementById('login-senha').setAttribute('autocomplete', 'current-password');
 }
