@@ -1,9 +1,3 @@
-// URL base da API
-const API_BASE_URL =
-  window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1')
-    ? 'http://localhost:5000'
-    : 'https://encontro-veras-saldanha-backend.onrender.com';
-
 // Função auxiliar para exibir mensagens de erro
 function showError(elementId, message) {
   const el = document.getElementById(elementId);
@@ -12,6 +6,8 @@ function showError(elementId, message) {
     el.style.display = message ? 'block' : 'none';
   }
 }
+
+const API_BASE_URL = 'https://encontro-veras-saldanha-backend.onrender.com';
 
 // Cadastro
 async function handleCadastro(e) {
@@ -90,6 +86,7 @@ async function handleLogin(e) {
 const formCadastro = document.getElementById('form-cadastro');
 if (formCadastro) {
   formCadastro.addEventListener('submit', handleCadastro);
+  // Autocomplete nos campos
   document.getElementById('cadastro-email').setAttribute('autocomplete', 'username');
   document.getElementById('cadastro-senha').setAttribute('autocomplete', 'new-password');
   document.getElementById('cadastro-confirmar-senha').setAttribute('autocomplete', 'new-password');
@@ -98,6 +95,7 @@ if (formCadastro) {
 const formLogin = document.getElementById('form-login');
 if (formLogin) {
   formLogin.addEventListener('submit', handleLogin);
+  // Autocomplete nos campos
   document.getElementById('login-email').setAttribute('autocomplete', 'username');
   document.getElementById('login-senha').setAttribute('autocomplete', 'current-password');
 }
