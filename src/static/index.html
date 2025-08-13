@@ -34,56 +34,50 @@
     </div>
   </div>
 
- <script>
-    // Função corrigida para carregar scripts
-    function loadScript(src, isModule = true) {
+<script>
+    // Função para carregar scripts
+    function loadScript(src) {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = src;
-        if (isModule) script.type = 'module';
+        script.type = 'text/javascript';
         script.crossOrigin = 'anonymous';
-        script.onload = () => resolve(script);
+        script.onload = () => {
+          console.log(`Script ${src} carregado com sucesso`);
+          resolve();
+        };
         script.onerror = () => {
-          console.error(`Falha ao carregar o script: ${src}`);  // Template literal corrigido
+          console.error(`Falha ao carregar: ${src}`);
           showErrorFallback();
-          reject(new Error(`Failed to load script: ${src}`));
+          reject();
         };
         document.body.appendChild(script);
       });
     }
 
-    // Carrega o script principal - VERIFIQUE SE ESTE CAMINHO ESTÁ CORRETO
-    loadScript('/assets/index-BuJMh_j5.js')
-      .catch(err => console.error('Erro no carregamento:', err));
-</script>
-
-    // Página de fallback aprimorada
+    // Página de fallback
     function showErrorFallback() {
       const root = document.getElementById('root');
       if (!root) return;
       
       root.innerHTML = `
-    <div style="padding: 2rem; text-align: center; font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-      <h1 style="color: #e74c3c; margin-bottom: 1rem;">Problema no carregamento</h1>
-      <p style="margin-bottom: 1.5rem; line-height: 1.5;">
-        Ocorreu um erro ao carregar a página. Por favor, recarregue ou tente novamente mais tarde.
-      </p>
-      <button onclick="location.reload()" 
-        style="padding: 12px 24px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
-        Recarregar Página
-      </button>
-      <p style="margin-top: 2rem; color: #95a5a6; font-size: 0.9rem;">
-        Se o problema persistir, entre em contato com os organizadores.
-      </p>
-    </div>
-  `;
-}
+        <div style="padding: 2rem; text-align: center; font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #e74c3c; margin-bottom: 1rem;">Problema no carregamento</h1>
+          <p style="margin-bottom: 1.5rem; line-height: 1.5;">
+            Ocorreu um erro ao carregar a página. Por favor, recarregue ou tente novamente mais tarde.
+          </p>
+          <button onclick="location.reload()" 
+            style="padding: 12px 24px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
+            Recarregar Página
+          </button>
+          <p style="margin-top: 2rem; color: #95a5a6; font-size: 0.9rem;">
+            Se o problema persistir, entre em contato com os organizadores.
+          </p>
+        </div>
+      `;
+    }
 
-    // Carrega o script principal
-    loadScript('/assets/index-BuJMh_j5.js')
-      .catch(err => console.error('Erro no carregamento:', err));
-
-    // Monitoramento de erros do cliente
+    // Monitoramento de erros
     window.addEventListener('error', function(e) {
       console.error('Erro capturado:', e.error);
       if (navigator.onLine) {
@@ -100,25 +94,64 @@
       }
     });
 
-    // Timeout para fallback
-    setTimeout(() => {
-      const loader = document.querySelector('.loading-screen');
-      const root = document.getElementById('root');
-      
-      if (loader && root && root.children.length <= 1) {
-        showErrorFallback();
-      } else if (loader) {
-        loader.style.display = 'none';
-      }
-    }, 5000);
+    // Inicialização principal
+    document.addEventListener('DOMContentLoaded', () => {
+      // Carrega o script principal
+      loadScript('/assets/index-BuJMh_j5.js')
+        .then(() => {
+          const loader = document.querySelector('.loading-screen');
+          if (loader) loader.style.display = 'none';
+        })
+        .catch(err => {
+          console.error('Erro no carregamento:', err);
+        });
 
-    // Dicas para desenvolvimento
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      console.info('Dicas para formulários:');
-      console.info('- Email: autocomplete="username"');
-      console.info('- Login: autocomplete="current-password"');
-      console.info('- Cadastro: autocomplete="new-password"');
-    }
+      // Timeout para fallback
+      setTimeout(() => {
+        const loader = document.querySelector('.loading-screen');
+        const root = document.getElementById('root');
+        
+        if (loader && root && root.children.length <= 1) {
+          showErrorFallback();
+        }
+      }, 5000);
+
+      // Debug (apenas desenvolvimento)
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        console.info('Dicas para formulários:');
+        console.info('- Email: autocomplete="username"');
+        console.info('- Login: autocomplete="current-password"');
+        console.info('- Cadastro: autocomplete="new-password"');
+        
+        // Mostra formulários de exemplo
+        document.querySelector('.temp-form-example').style.display = 'block';
+        
+        // Configura formulários de exemplo
+        ['login-form', 'signup-form'].forEach(formId => {
+          const form = document.getElementById(formId);
+          if (form) {
+            form.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const formData = new FormData(form);
+              
+              try {
+                const response = await fetch(form.action, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(Object.fromEntries(formData))
+                });
+                
+                if (!response.ok) throw new Error(await response.text());
+                alert('Operação realizada com sucesso!');
+              } catch (err) {
+                alert('Erro: ' + err.message);
+                console.error('Erro no formulário:', err);
+              }
+            });
+          }
+        });
+      }
+    });
   </script>
 
   <style>
