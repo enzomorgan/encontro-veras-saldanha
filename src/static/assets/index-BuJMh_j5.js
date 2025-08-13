@@ -1,156 +1,177 @@
-// Função auxiliar para exibir mensagens de erro
-function showError(elementId, message) {
+// Configuração inicial
+const APP_CONFIG = {
+  debug: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
+  apiBaseUrl: 'https://encontro-veras-saldanha-backend.onrender.com'
+};
+
+// Sistema de loading
+function showLoading(show = true) {
+  const loader = document.getElementById('loading-screen');
+  if (loader) loader.style.display = show ? 'flex' : 'none';
+}
+
+// Função auxiliar melhorada
+function showError(elementId, message, isSuccess = false) {
   const el = document.getElementById(elementId);
   if (el) {
-    el.textContent = message;
+    el.innerHTML = message ? `<span class="${isSuccess ? 'success' : 'error'}">${message}</span>` : '';
     el.style.display = message ? 'block' : 'none';
   }
 }
 
-// API hospedada na Render
-const API_BASE_URL = 'https://encontro-veras-saldanha-backend.onrender.com';
-
-// Validação de formulário
+// Validação de formulário aprimorada
 function validateForm(payload, isLogin = false) {
+  const errors = [];
+  
   if (!isLogin) {
-    if (!payload.nomeCompleto || !payload.email || !payload.password || !payload.confirmPassword) {
-      return 'Preencha todos os campos obrigatórios';
-    }
-    if (payload.password !== payload.confirmPassword) {
-      return 'As senhas não coincidem';
-    }
-    if (payload.password.length < 6) {
-      return 'A senha deve ter pelo menos 6 caracteres';
-    }
+    if (!payload.nomeCompleto?.trim()) errors.push('Nome completo é obrigatório');
+    if (!payload.email?.trim()) errors.push('Email é obrigatório');
+    if (!payload.password) errors.push('Senha é obrigatória');
+    if (!payload.confirmPassword) errors.push('Confirmação de senha é obrigatória');
+    if (payload.password !== payload.confirmPassword) errors.push('As senhas não coincidem');
+    if (payload.password?.length < 6) errors.push('A senha deve ter pelo menos 6 caracteres');
   } else {
-    if (!payload.email || !payload.password) {
-      return 'Preencha todos os campos obrigatórios';
-    }
+    if (!payload.email?.trim()) errors.push('Email é obrigatório');
+    if (!payload.password) errors.push('Senha é obrigatória');
   }
-  return null;
+  
+  return errors.length ? errors.join('<br>') : null;
 }
 
-// Cadastro
+// Função de requisição genérica
+async function makeRequest(endpoint, method, body, authToken = null) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+  };
+
+  try {
+    const response = await fetch(`${APP_CONFIG.apiBaseUrl}${endpoint}`, {
+      method,
+      headers,
+      body: JSON.stringify(body)
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Erro no servidor');
+    }
+
+    return data;
+  } catch (error) {
+    console.error(`Erro na requisição ${endpoint}:`, error);
+    throw error;
+  }
+}
+
+// Cadastro otimizado
 async function handleCadastro(e) {
   e.preventDefault();
+  showLoading(true);
   showError('cadastro-error', '');
 
   const payload = {
-    nomeCompleto: document.getElementById('cadastro-nome').value.trim(),
-    email: document.getElementById('cadastro-email').value.trim(),
-    password: document.getElementById('cadastro-senha').value,
-    confirmPassword: document.getElementById('cadastro-confirmar-senha').value,
-    descendencia: document.getElementById('cadastro-descendencia').value.trim().toLowerCase(),
-    idade: parseInt(document.getElementById('cadastro-idade').value, 10),
-    cidadeResidencia: document.getElementById('cadastro-cidade').value.trim()
+    nomeCompleto: document.getElementById('cadastro-nome')?.value.trim(),
+    email: document.getElementById('cadastro-email')?.value.trim(),
+    password: document.getElementById('cadastro-senha')?.value,
+    confirmPassword: document.getElementById('cadastro-confirmar-senha')?.value,
+    descendencia: document.getElementById('cadastro-descendencia')?.value.trim().toLowerCase(),
+    idade: parseInt(document.getElementById('cadastro-idade')?.value, 10),
+    cidadeResidencia: document.getElementById('cadastro-cidade')?.value.trim()
   };
 
-  // Validação antes de enviar
-  const validationError = validateForm(payload);
-  if (validationError) {
-    showError('cadastro-error', `❌ ${validationError}`);
-    return;
-  }
-
   try {
-    const res = await fetch(`${API_BASE_URL}/api/auth/cadastro`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-    
-    if (!res.ok) {
-      const errorMsg = data.error || 
-                      (res.status === 400 ? 'Dados inválidos' : 
-                       res.status === 401 ? 'Não autorizado' : 
-                       'Erro no servidor');
-      showError('cadastro-error', `❌ ${errorMsg}`);
+    const validationError = validateForm(payload);
+    if (validationError) {
+      showError('cadastro-error', `❌ ${validationError}`);
       return;
     }
 
-    showError('cadastro-error', '✅ Cadastro realizado com sucesso!');
-    document.getElementById('form-cadastro').reset();
+    const data = await makeRequest('/api/auth/cadastro', 'POST', payload);
     
-    // Redireciona para login após 2 segundos
+    showError('cadastro-error', '✅ Cadastro realizado com sucesso!', true);
+    document.getElementById('form-cadastro')?.reset();
+    
     setTimeout(() => {
-      window.location.href = '#login';
+      window.location.hash = '#login';
     }, 2000);
     
-  } catch (err) {
-    console.error('Erro no cadastro:', err);
-    showError('cadastro-error', '❌ Falha de conexão com o servidor');
+  } catch (error) {
+    showError('cadastro-error', `❌ ${error.message || 'Falha no cadastro'}`);
+  } finally {
+    showLoading(false);
   }
 }
 
-// Login
+// Login otimizado
 async function handleLogin(e) {
   e.preventDefault();
+  showLoading(true);
   showError('login-error', '');
 
   const payload = {
-    email: document.getElementById('login-email').value.trim(),
-    password: document.getElementById('login-senha').value
+    email: document.getElementById('login-email')?.value.trim(),
+    password: document.getElementById('login-senha')?.value
   };
 
-  // Validação antes de enviar
-  const validationError = validateForm(payload, true);
-  if (validationError) {
-    showError('login-error', `❌ ${validationError}`);
-    return;
-  }
-
   try {
-    const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-    
-    if (!res.ok) {
-      const errorMsg = data.error || 
-                      (res.status === 400 ? 'Credenciais inválidas' : 
-                       res.status === 401 ? 'Não autorizado' : 
-                       'Erro no servidor');
-      showError('login-error', `❌ ${errorMsg}`);
+    const validationError = validateForm(payload, true);
+    if (validationError) {
+      showError('login-error', `❌ ${validationError}`);
       return;
     }
 
-    showError('login-error', '✅ Login realizado com sucesso!');
+    const data = await makeRequest('/api/auth/login', 'POST', payload);
+    
+    showError('login-error', '✅ Login realizado com sucesso!', true);
     localStorage.setItem('token', data.token);
     
-    // Redireciona após 1 segundo
     setTimeout(() => {
       window.location.href = '/';
     }, 1000);
     
-  } catch (err) {
-    console.error('Erro no login:', err);
-    showError('login-error', '❌ Falha de conexão com o servidor');
+  } catch (error) {
+    showError('login-error', `❌ ${error.message || 'Falha no login'}`);
+  } finally {
+    showLoading(false);
   }
 }
 
-// Inicialização quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', function() {
-  // Verifica se está na página de autenticação
-  if (document.getElementById('form-cadastro') || document.getElementById('form-login')) {
+// Verificação de autenticação
+function checkAuth() {
+  const token = localStorage.getItem('token');
+  const isAuthPage = window.location.pathname.includes('auth');
+  
+  if (token && isAuthPage) {
+    window.location.href = '/';
+  }
+}
+
+// Inicialização robusta
+function initApp() {
+  try {
+    // Verifica autenticação
+    checkAuth();
+    
+    // Configura formulários
     const formCadastro = document.getElementById('form-cadastro');
     const formLogin = document.getElementById('form-login');
     
-    if (formCadastro) {
-      formCadastro.addEventListener('submit', handleCadastro);
-    }
+    if (formCadastro) formCadastro.addEventListener('submit', handleCadastro);
+    if (formLogin) formLogin.addEventListener('submit', handleLogin);
     
-    if (formLogin) {
-      formLogin.addEventListener('submit', handleLogin);
+    // Esconde o loading
+    showLoading(false);
+    
+    if (APP_CONFIG.debug) {
+      console.log('Aplicação inicializada com sucesso');
     }
+  } catch (error) {
+    console.error('Falha na inicialização:', error);
+    showError('global-error', '❌ Falha ao carregar a aplicação');
   }
-  
-  // Verifica se há token salvo para redirecionar
-  if (localStorage.getItem('token') && window.location.pathname.includes('auth')) {
-    window.location.href = '/';
-  }
-});
+}
+
+// Inicia quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', initApp);
