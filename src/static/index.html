@@ -6,132 +6,160 @@
   <title>VI Encontro da Família Veras & Saldanha - Mossoró 2026</title>
   <meta name="description" content="Site oficial do VI Encontro da Família Veras & Saldanha em Mossoró-RN, 2026">
 
-  <!-- Pré-carregamento otimizado -->
-  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <!-- Carregamento CSS -->
   <link rel="stylesheet" href="/assets/index-Dy54L_lS.css">
-  <link rel="preload" href="/assets/index-BuJMh_j5.js" as="script" crossorigin="anonymous">
 
-  <!-- Meta tags para SEO e compartilhamento -->
+  <!-- Pré-carregamentos -->
+  <link rel="preload" href="/assets/index-BuJMh_j5.js" as="script" crossorigin>
+
+  <!-- Meta tags -->
   <meta property="og:title" content="VI Encontro Veras & Saldanha 2026">
   <meta property="og:description" content="11 de julho de 2026 | Requinte Buffet">
   <meta property="og:image" content="/assets/social-share.jpg">
   <meta property="og:url" content="https://encontro-veras-saldanha.onrender.com">
-  <meta name="theme-color" content="#2c3e50">
-
-  <!-- Pré-conexão para melhor performance -->
-  <link rel="preconnect" href="https://encontro-veras-saldanha.onrender.com">
-  <link rel="dns-prefetch" href="https://encontro-veras-saldanha.onrender.com">
 </head>
 <body>
   <div id="root">
-    <div class="loading-screen" style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #f5f5f5;">
-      <div style="text-align: center; padding: 2rem;">
-        <h1 style="color: #2c3e50; margin-bottom: 1rem; font-family: sans-serif;">VI Encontro da Família Veras & Saldanha</h1>
-        <div style="display: inline-block; width: 50px; height: 50px; border: 5px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: #3498db; animation: spin 1s linear infinite;"></div>
-        <p style="margin-top: 1rem; color: #7f8c8d; font-family: sans-serif;">Carregando...</p>
+    <div class="loading-screen">
+      <div class="loading-content">
+        <h1>VI Encontro da Família Veras & Saldanha</h1>
+        <div class="spinner"></div>
+        <p>Carregando...</p>
       </div>
     </div>
   </div>
 
   <script>
-    // Função para carregar scripts corrigida
-    function loadScript(src) {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.crossOrigin = 'anonymous';
-        script.onload = () => {
-          console.log(`Script carregado: ${src}`);
-          resolve(script);
-        };
-        script.onerror = () => {
-          console.error(`Falha ao carregar o script: ${src}`);
-          showErrorFallback();
-          reject(new Error(`Failed to load script: ${src}`));
-        };
-        document.body.appendChild(script);
-      });
+    // Configuração inicial
+    window.appConfig = {
+      loaded: false,
+      debugMode: false
+    };
+
+    // Verificador de carregamento
+    function checkAppState() {
+      const root = document.getElementById('root');
+      if (!window.appConfig.loaded) {
+        showErrorFallback();
+        if (root) root.innerHTML = '';
+      }
     }
 
-    // Página de fallback aprimorada
+    // Fallback aprimorado
     function showErrorFallback() {
       const root = document.getElementById('root');
       if (!root) return;
       
       root.innerHTML = `
-        <div style="padding: 2rem; text-align: center; font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #e74c3c; margin-bottom: 1rem;">Problema no carregamento</h1>
-          <p style="margin-bottom: 1.5rem; line-height: 1.5;">
-            Ocorreu um erro ao carregar a página. Por favor, recarregue ou tente novamente mais tarde.
-          </p>
-          <button onclick="window.location.reload()" 
-            style="padding: 12px 24px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
-            Recarregar Página
-          </button>
-          <p style="margin-top: 2rem; color: #95a5a6; font-size: 0.9rem;">
-            Se o problema persistir, entre em contato com os organizadores.
-          </p>
+        <div class="error-container">
+          <h1>Problema no carregamento</h1>
+          <p>O conteúdo não pode ser carregado. Por favor:</p>
+          <button onclick="window.location.reload()">Recarregar Página</button>
+          <p class="contact">Contate os organizadores se o problema persistir</p>
         </div>
       `;
     }
 
-    // Verificação de que o app foi carregado
-    window.appLoaded = false;
+    // Carregador de scripts robusto
+    function loadAppScript() {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = '/assets/index-BuJMh_j5.js';
+        script.crossOrigin = 'anonymous';
+        
+        script.onload = () => {
+          window.appConfig.loaded = true;
+          resolve();
+        };
+        
+        script.onerror = () => {
+          console.error('Falha ao carregar o script principal');
+          reject();
+        };
+        
+        document.body.appendChild(script);
+      });
+    }
 
-    // Carrega o script principal com tratamento de erros
-    document.addEventListener('DOMContentLoaded', () => {
-      const loadingTimeout = setTimeout(() => {
-        if (!window.appLoaded) {
-          showErrorFallback();
-        }
-      }, 5000);
+    // Inicialização controlada
+    async function initializeApp() {
+      try {
+        // Timeout de segurança
+        const loadTimeout = setTimeout(() => {
+          if (!window.appConfig.loaded) {
+            showErrorFallback();
+          }
+        }, 10000);
 
-      loadScript('/assets/index-BuJMh_j5.js')
-        .then(() => {
-          window.appLoaded = true;
-          clearTimeout(loadingTimeout);
-          const loader = document.querySelector('.loading-screen');
-          if (loader) loader.style.display = 'none';
-        })
-        .catch(err => {
-          console.error('Erro no carregamento:', err);
-          clearTimeout(loadingTimeout);
-        });
-    });
+        // Carrega o script principal
+        await loadAppScript();
+        
+        // Esconde o loading
+        const loader = document.querySelector('.loading-screen');
+        if (loader) loader.style.display = 'none';
+        
+        clearTimeout(loadTimeout);
+        
+      } catch (error) {
+        console.error('Falha na inicialização:', error);
+        showErrorFallback();
+      }
+    }
 
-    // Monitoramento de erros do cliente
-    window.addEventListener('error', function(e) {
-      console.error('Erro capturado:', e.error);
-      if (navigator.onLine) {
-        fetch('/api/log-client-error', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            error: e.message,
-            stack: e.error?.stack,
-            url: location.href,
-            timestamp: new Date().toISOString()
-          })
-        }).catch(err => console.error('Falha ao reportar erro:', err));
+    // Inicia o processo
+    document.addEventListener('DOMContentLoaded', initializeApp);
+
+    // Monitoramento de erros
+    window.addEventListener('error', (e) => {
+      console.error('Erro global:', e.error);
+      if (!window.appConfig.loaded) {
+        showErrorFallback();
       }
     });
-
-    // Animação de loading
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-      .error-message {
-        animation: fadeIn 0.3s ease-out;
-      }
-    `;
-    document.head.appendChild(style);
   </script>
+
+  <style>
+    /* Estilos críticos (inline como fallback) */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: sans-serif;
+    }
+    
+    .loading-screen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f5f5f5;
+    }
+    
+    .loading-content {
+      text-align: center;
+      padding: 2rem;
+    }
+    
+    .spinner {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(0,0,0,0.1);
+      border-radius: 50%;
+      border-top-color: #3498db;
+      animation: spin 1s linear infinite;
+    }
+    
+    .error-container {
+      padding: 2rem;
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </body>
 </html>
