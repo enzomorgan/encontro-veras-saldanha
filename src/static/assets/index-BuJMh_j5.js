@@ -7,7 +7,7 @@ function showError(elementId, message) {
   }
 }
 
-// URL base do backend no Render
+// API hospedada na Render
 const API_BASE_URL = 'https://encontro-veras-saldanha-backend.onrender.com';
 
 // Cadastro
@@ -35,7 +35,6 @@ async function handleCadastro(e) {
     const data = await res.json();
     if (!res.ok) {
       showError('cadastro-error', data.error || 'Erro ao cadastrar');
-      if (data.details) console.error('Detalhes do erro:', data.details);
       return;
     }
 
@@ -85,14 +84,9 @@ async function handleLogin(e) {
 const formCadastro = document.getElementById('form-cadastro');
 if (formCadastro) {
   formCadastro.addEventListener('submit', handleCadastro);
-  document.getElementById('cadastro-email').setAttribute('autocomplete', 'username');
-  document.getElementById('cadastro-senha').setAttribute('autocomplete', 'new-password');
-  document.getElementById('cadastro-confirmar-senha').setAttribute('autocomplete', 'new-password');
 }
 
 const formLogin = document.getElementById('form-login');
 if (formLogin) {
   formLogin.addEventListener('submit', handleLogin);
-  document.getElementById('login-email').setAttribute('autocomplete', 'username');
-  document.getElementById('login-senha').setAttribute('autocomplete', 'current-password');
 }
