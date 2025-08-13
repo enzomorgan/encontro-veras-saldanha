@@ -46,7 +46,7 @@
         script.onerror = () => {
           console.error('Falha ao carregar o script: ${src}');
           showErrorFallback();
-          reject(new Error(Failed to load script: ${src}));
+         reject(new Error(`Failed to load script: ${src}`));
         };
         document.body.appendChild(script);
       });
