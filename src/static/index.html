@@ -57,22 +57,22 @@
       const root = document.getElementById('root');
       if (!root) return;
       
-      root.innerHTML = 
-        <div style="padding: 2rem; text-align: center; font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #e74c3c; margin-bottom: 1rem;">Problema no carregamento</h1>
-          <p style="margin-bottom: 1.5rem; line-height: 1.5;">
-            Ocorreu um erro ao carregar a página. Por favor, recarregue ou tente novamente mais tarde.
-          </p>
-          <button onclick="location.reload()" 
-            style="padding: 12px 24px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
-            Recarregar Página
-          </button>
-          <p style="margin-top: 2rem; color: #95a5a6; font-size: 0.9rem;">
-            Se o problema persistir, entre em contato com os organizadores.
-          </p>
-        </div>
-      ;
-    }
+      root.innerHTML = `
+    <div style="padding: 2rem; text-align: center; font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <h1 style="color: #e74c3c; margin-bottom: 1rem;">Problema no carregamento</h1>
+      <p style="margin-bottom: 1.5rem; line-height: 1.5;">
+        Ocorreu um erro ao carregar a página. Por favor, recarregue ou tente novamente mais tarde.
+      </p>
+      <button onclick="location.reload()" 
+        style="padding: 12px 24px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
+        Recarregar Página
+      </button>
+      <p style="margin-top: 2rem; color: #95a5a6; font-size: 0.9rem;">
+        Se o problema persistir, entre em contato com os organizadores.
+      </p>
+    </div>
+  `;
+}
 
     // Carrega o script principal
     loadScript('/assets/index-BuJMh_j5.js')
