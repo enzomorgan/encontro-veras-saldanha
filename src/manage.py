@@ -1,4 +1,4 @@
-from src.main import app, db
+from main import app, db
 
 def create_tables():
     with app.app_context():
@@ -7,3 +7,4 @@ def create_tables():
 
 if __name__ == '__main__':
     create_tables()
+
