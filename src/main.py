@@ -1,7 +1,8 @@
 import os
 from flask import Flask, send_from_directory
 from flask_cors import CORS
-from models.user import db  # Importação corrigida
+from src.models.user import db
+
 
 # Cria a app Flask
 app = Flask(__name__, static_folder='static', template_folder='templates')
