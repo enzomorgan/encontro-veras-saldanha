@@ -123,7 +123,6 @@ def internal_error(e):
 def bad_gateway(e):
     return jsonify(error='Serviço temporariamente indisponível'), 502
 
-return app
 
 if __name__ == '__main__':
     signal.alarm(0)  # Desativa timeout
