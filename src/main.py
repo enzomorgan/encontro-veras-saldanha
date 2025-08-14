@@ -9,9 +9,10 @@ import logging
 import psycopg2
 from psycopg2 import OperationalError
 
-# Configuração de timeout para inicialização
-def handle_timeout(signum, frame):
-    sys.exit(1)
+def create_app():
+    # Timeout de inicialização
+    def handle_timeout(signum, frame):
+        sys.exit(1)
 
 signal.signal(signal.SIGALRM, handle_timeout)
 signal.alarm(30)  # 30 segundos para inicialização
@@ -122,10 +123,9 @@ def internal_error(e):
 def bad_gateway(e):
     return jsonify(error='Serviço temporariamente indisponível'), 502
 
+return app
+
 if __name__ == '__main__':
     signal.alarm(0)  # Desativa timeout
     port = int(os.getenv('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
-
-def create_app():
-    return app
