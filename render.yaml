@@ -2,16 +2,13 @@ services:
   - type: web
     name: encontro-veras-saldanha-backend
     region: oregon
-    env: python
-    pythonVersion: "3.12"
+    runtime: python
+    pythonVersion: "3.12.1" 
     buildCommand: |
       pip install --upgrade pip
       pip install -r requirements.txt
-      cd src && python manage.py create_tables
-    startCommand: cd src && gunicorn --workers 1 --bind 0.0.0.0:$PORT main:app
-    staticFiles:
-      - path: /static
-        destination: src/static
+    startCommand: gunicorn --workers 2 --threads 4 --bind 0.0.0.0:$PORT --timeout 120 src.main:app
+    env: python
     envVars:
       - key: FLASK_ENV
         value: production
@@ -19,11 +16,16 @@ services:
         fromDatabase:
           name: veras-saldanha-db
           property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
       - key: JWT_SECRET_KEY
         generateValue: true
       - key: PYTHONUNBUFFERED
         value: "1"
+      - key: ALLOWED_ORIGINS
+        value: "https://encontro-veras-saldanha.onrender.com"
     healthCheckPath: /api/health
+    autoDeploy: true
     plan: free
 
 databases:
@@ -31,4 +33,4 @@ databases:
     databaseName: veras_saldanha
     user: veras_user
     plan: free
-
+    region: oregon 
