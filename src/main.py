@@ -10,11 +10,12 @@ import psycopg2
 from psycopg2 import OperationalError
 
 def create_app():
-   load_dotenv()
+    load_dotenv()
     app = Flask(
         __name__,
-        static_folder=os.path.abspath(os.path.join(os.path.dirname(__file__), '../static')
-       )
+        static_folder=os.path.abspath(
+            os.path.join(os.path.dirname(__file__), '../static')
+        )
     )
     
     # Configuração de timeout
