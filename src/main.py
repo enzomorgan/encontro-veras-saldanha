@@ -94,15 +94,17 @@ def create_app():
         return send_from_directory(app.static_folder, 'index.html')
         
     @app.route('/<path:path>')
-    def serve_static(path):
-        if path.startswith('api/'):
-            return jsonify(error='Endpoint não encontrado'), 404
-            
-        file_path = os.path.join(app.static_folder, path)
-        if os.path.exists(file_path) and not os.path.isdir(file_path) and path != '':
-            return send_from_directory(app.static_folder, path)
-            
-        return send_from_directory(app.static_folder, 'index.html')
+def serve_static(path):
+    if path.startswith('api/'):
+        return jsonify(error='Endpoint não encontrado'), 404
+
+    file_path = os.path.join(app.static_folder, path)
+    if os.path.exists(file_path) and not os.path.isdir(file_path) and path != '':
+        return send_from_directory(app.static_folder, path)
+
+    # Para SPA funcionar em rotas como /dashboard, /login, etc
+    return send_from_directory(app.static_folder, 'index.html')
+
 
     # Tratamento de Erros
     @app.errorhandler(404)
