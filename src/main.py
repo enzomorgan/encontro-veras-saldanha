@@ -123,3 +123,6 @@ if __name__ == '__main__':
     signal.alarm(0)  # Desativa timeout
     port = int(os.getenv('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
+
+def create_app():
+    return app
