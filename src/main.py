@@ -32,6 +32,7 @@ app.logger.addHandler(handler)
 # CORS Config
 CORS(app, resources={
     r"/api/*": {
+        "https://encontro-veras-saldanha.onrender.com", 
         "origins": os.getenv('ALLOWED_ORIGINS', '').split(','),
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "X-CSRFToken"],
