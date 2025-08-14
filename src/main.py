@@ -68,6 +68,14 @@ def serve_static(path):
     except:
         return app.send_static_file('index.html')
 
+@app.route('/api/log-client-error', methods=['POST'])
+def log_client_error():
+    if request.method == 'POST':
+        data = request.get_json()
+        app.logger.error(f'Erro no cliente: {data}')
+        return jsonify({'status': 'logged'}), 200
+    return jsonify({'error': 'Método não permitido'}), 405
+
 # Tratamento de erros
 @app.errorhandler(404)
 def not_found(e):
