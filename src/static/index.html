@@ -35,12 +35,12 @@
   </div>
 
 <script>
-    // Função para carregar scripts
+    // Função robusta para carregar scripts
     function loadScript(src) {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = src;
-        script.type = 'text/javascript';
+        script.type = 'application/javascript'; // MIME type corrigido
         script.crossOrigin = 'anonymous';
         script.onload = () => {
           console.log(`Script ${src} carregado com sucesso`);
@@ -48,8 +48,7 @@
         };
         script.onerror = () => {
           console.error(`Falha ao carregar: ${src}`);
-          showErrorFallback();
-          reject();
+          reject(new Error(`Failed to load ${src}`));
         };
         document.body.appendChild(script);
       });
@@ -77,56 +76,69 @@
       `;
     }
 
-    // Monitoramento de erros
+    // Monitoramento de erros aprimorado
     window.addEventListener('error', function(e) {
       console.error('Erro capturado:', e.error);
+      const errorData = {
+        error: e.message,
+        stack: e.error?.stack,
+        url: location.href,
+        timestamp: new Date().toISOString()
+      };
+      
       if (navigator.onLine) {
         fetch('/api/log-client-error', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            error: e.message,
-            stack: e.error?.stack,
-            url: location.href,
-            timestamp: new Date().toISOString()
-          })
-        }).catch(err => console.error('Falha ao reportar erro:', err));
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'  // Header adicionado
+          },
+          body: JSON.stringify(errorData)
+        }).catch(err => console.warn('Falha ao reportar erro:', err));
+      }
+      
+      // Fallback no localStorage
+      try {
+        localStorage.setItem('last_client_error', JSON.stringify(errorData));
+      } catch (e) {
+        console.warn('Não foi possível salvar erro no localStorage:', e);
       }
     });
 
-    // Inicialização principal
+    // Inicialização principal com fallback
     document.addEventListener('DOMContentLoaded', () => {
-      // Carrega o script principal
+      const loadingTimeout = setTimeout(() => {
+        const loader = document.querySelector('.loading-screen');
+        if (loader && loader.style.display !== 'none') {
+          showErrorFallback();
+        }
+      }, 10000);  // Timeout aumentado para 10s
+
+      // Carregamento com fallback
       loadScript('/assets/index-BuJMh_j5.js')
+        .catch(() => {
+          console.warn('Falha no script local, tentando CDN...');
+          return loadScript('https://cdn-seu-site.com/fallback/index-BuJMh_j5.js');
+        })
         .then(() => {
+          clearTimeout(loadingTimeout);
           const loader = document.querySelector('.loading-screen');
           if (loader) loader.style.display = 'none';
         })
         .catch(err => {
-          console.error('Erro no carregamento:', err);
+          console.error('Todos os fallbacks falharam:', err);
+          showErrorFallback();
         });
 
-      // Timeout para fallback
-      setTimeout(() => {
-        const loader = document.querySelector('.loading-screen');
-        const root = document.getElementById('root');
-        
-        if (loader && root && root.children.length <= 1) {
-          showErrorFallback();
-        }
-      }, 5000);
-
-      // Debug (apenas desenvolvimento)
+      // Debug
       if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         console.info('Dicas para formulários:');
         console.info('- Email: autocomplete="username"');
         console.info('- Login: autocomplete="current-password"');
         console.info('- Cadastro: autocomplete="new-password"');
         
-        // Mostra formulários de exemplo
         document.querySelector('.temp-form-example').style.display = 'block';
         
-        // Configura formulários de exemplo
         ['login-form', 'signup-form'].forEach(formId => {
           const form = document.getElementById(formId);
           if (form) {
@@ -152,7 +164,7 @@
         });
       }
     });
-  </script>
+</script>
 
   <style>
     /* Animação de loading */
