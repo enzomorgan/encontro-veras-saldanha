@@ -1,8 +1,9 @@
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 from dotenv import load_dotenv
+import logging
 
 # Configuração inicial
 load_dotenv()
@@ -17,17 +18,24 @@ app.config.update(
     JSONIFY_PRETTYPRINT_REGULAR=True
 )
 
+# Configuração de logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+handler = logging.FileHandler('client_errors.log')
+handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+app.logger.addHandler(handler)
+
 # CORS Config
 CORS(app, resources={
     r"/api/*": {
         "origins": os.getenv('ALLOWED_ORIGINS', '').split(','),
-        "methods": ["GET", "POST"],
+        "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "X-CSRFToken"],
         "supports_credentials": True
     }
 })
 
-# Blueprints
+# Rotas de Autenticação
 @app.route('/api/auth/csrf-token', methods=['GET'])
 def get_csrf_token():
     return jsonify({
@@ -46,6 +54,7 @@ def login():
 @app.route('/api/auth/cadastro', methods=['POST'])
 def cadastro():
     data = request.get_json()
+    
     # Validação básica
     if data.get('password') != data.get('confirmPassword'):
         return jsonify({'error': 'Senhas não coincidem'}), 400
@@ -56,25 +65,58 @@ def cadastro():
         'message': 'Usuário criado com sucesso'
     }), 201
 
-# Rotas estáticas
+# Rota de Log de Erros
+@app.route('/api/log-client-error', methods=['POST'])
+def log_client_error():
+    try:
+        if not request.is_json:
+            return jsonify({'error': 'Content-Type must be application/json'}), 415
+            
+        data = request.get_json()
+        
+        app.logger.error(f"""
+        ERRO NO CLIENTE:
+        Mensagem: {data.get('error')}
+        URL: {data.get('url')}
+        Timestamp: {data.get('timestamp')}
+        Stack: {data.get('stack')}
+        """)
+        
+        return jsonify({
+            'status': 'error_logged',
+            'received_data': data
+        }), 200
+        
+    except Exception as e:
+        app.logger.error(f'Erro ao processar log do cliente: {str(e)}')
+        return jsonify({'error': 'Internal server error'}), 500
+
+# Rotas Estáticas
 @app.route('/')
 def serve_index():
     return app.send_static_file('index.html')
 
+@app.route('/assets/<path:filename>')
+def serve_assets(filename):
+    response = send_from_directory(
+        os.path.join(app.static_folder, 'assets'),
+        filename
+    )
+    # Force MIME type para JS e CSS
+    if filename.endswith('.js'):
+        response.headers.set('Content-Type', 'application/javascript')
+    elif filename.endswith('.css'):
+        response.headers.set('Content-Type', 'text/css')
+    return response
+
 @app.route('/<path:path>')
 def serve_static(path):
+    if path.startswith('api/'):
+        return jsonify(error='Endpoint não encontrado'), 404
     try:
         return send_from_directory(app.static_folder, path)
     except:
         return app.send_static_file('index.html')
-
-@app.route('/api/log-client-error', methods=['POST'])
-def log_client_error():
-    if request.method == 'POST':
-        data = request.get_json()
-        app.logger.error(f'Erro no cliente: {data}')
-        return jsonify({'status': 'logged'}), 200
-    return jsonify({'error': 'Método não permitido'}), 405
 
 # Tratamento de erros
 @app.errorhandler(404)
