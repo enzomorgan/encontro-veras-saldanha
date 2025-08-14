@@ -4,6 +4,10 @@ from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 from dotenv import load_dotenv
 import logging
+import psycopg2
+from psycopg2 import OperationalError
+
+
 
 # Configuração inicial
 load_dotenv()
@@ -34,6 +38,32 @@ CORS(app, resources={
         "supports_credentials": True
     }
 })
+
+#Rotas da API
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    db_status = 'disconnected'
+    try:
+        # Tenta estabelecer conexão e executar uma query simples
+        conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+        cursor = conn.cursor()
+        cursor.execute('SELECT 1')
+        cursor.close()
+        conn.close()
+        db_status = 'connected'
+    except OperationalError as e:
+        app.logger.error(f'Erro na conexão com o banco: {str(e)}')
+        db_status = f'error: {str(e)}'
+    
+    return jsonify({
+        'status': 'healthy',
+        'version': '1.0.0',
+        'database': db_status,
+        'details': {
+            'db_server': os.getenv('DATABASE_URL').split('@')[1].split('/')[0] if os.getenv('DATABASE_URL') else 'unknown',
+            'db_name': os.getenv('DATABASE_URL').split('/')[-1] if os.getenv('DATABASE_URL') else 'unknown'
+        }
+    }), 200 if db_status == 'connected' else 503
 
 # Rotas de Autenticação
 @app.route('/api/auth/csrf-token', methods=['GET'])
@@ -117,6 +147,7 @@ def serve_static(path):
         return send_from_directory(app.static_folder, path)
     except:
         return app.send_static_file('index.html')
+
 
 # Tratamento de erros
 @app.errorhandler(404)
