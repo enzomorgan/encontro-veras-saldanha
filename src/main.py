@@ -8,18 +8,19 @@ from dotenv import load_dotenv
 import logging
 import psycopg2
 from psycopg2 import OperationalError
+from functools import wraps
 
 def create_app():
-    # Timeout de inicialização
+    load_dotenv()
+    app = Flask(__name__, static_folder=os.path.abspath(os.path.join(os.path.dirname(__file__), '../static')))
+    
     def handle_timeout(signum, frame):
-        sys.exit(1)
-
-signal.signal(signal.SIGALRM, handle_timeout)
-signal.alarm(30)  # 30 segundos para inicialização
-
-# Configuração inicial
-load_dotenv()
-app = Flask(__name__, static_folder=os.path.abspath(os.path.join(os.path.dirname(__file__), '../static')))
+       app.logger.error("Timeout na inicialização do aplicativo")
+       sys.exit(1)
+        
+    if os.getenv('ENV') == 'production':
+        signal.signal(signal.SIGALRM, handle_timeout)
+        signal.alarm(30)    
 
 # Configurações de Segurança
 app.config.update(
@@ -29,7 +30,6 @@ app.config.update(
     SESSION_COOKIE_SAMESITE='Lax',
     JSONIFY_PRETTYPRINT_REGULAR=True,
     PREFERRED_URL_SCHEME='https',
-    SERVER_NAME='encontro-veras-saldanha.onrender.com'
 )
 
 # Configuração de logging
@@ -49,23 +49,28 @@ CORS(app, resources={
     }
 })
 
+register_routes(app)
+
+# Desativa o timeout após inicialização
+if os.environ.get('ENV') == 'production':
+    signal.alarm(0)
+
+return app
+
 # Rotas da API
+def register_routes(app):
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    try:
-        signal.alarm(10)  # Timeout de 10s para health check
-        db_status = 'disconnected'
-        
+    try: 
         with psycopg2.connect(os.getenv('DATABASE_URL'), connect_timeout=5) as conn:
             with conn.cursor() as cursor:
                 cursor.execute('SELECT 1')
-                db_status = 'connected'
         
         return jsonify({
             'status': 'healthy',
             'version': '1.0.0',
-            'database': db_status
-        }), 200
+            'database': 'connected'
+        })
         
     except Exception as e:
         app.logger.error(f'Health check failed: {str(e)}')
@@ -124,7 +129,8 @@ def bad_gateway(e):
     return jsonify(error='Serviço temporariamente indisponível'), 502
 
 
+app = create_app()
+
 if __name__ == '__main__':
-    signal.alarm(0)  # Desativa timeout
     port = int(os.getenv('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
