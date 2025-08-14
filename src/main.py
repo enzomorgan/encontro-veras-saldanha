@@ -94,7 +94,10 @@ def login():
         return jsonify({'error': 'Erro no servidor'}), 500
 
 # Rotas Estáticas (SPA)
-@app.route('/', defaults={'path': ''})
+@app.route('/')
+def home():
+    return send_from_directory(app.static_folder, 'index.html')
+    
 @app.route('/<path:path>')
 def serve_static(path):
     if path.startswith('api/'):
