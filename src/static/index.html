@@ -6,11 +6,12 @@
   <title>VI Encontro da Família Veras & Saldanha - Mossoró 2026</title>
   <meta name="description" content="Site oficial do VI Encontro da Família Veras & Saldanha em Mossoró-RN, 2026">
 
-  <!-- Pré-carregamento otimizado -->
+  <!-- Favicon -->
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+  <!-- CSS -->
   <link rel="preload" href="/static/assets/index-Dy54L_lS.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="/static/assets/index-Dy54L_lS.css"></noscript>
-  <link rel="preload" href="/static/assets/index-BuJMh_j5.js" as="script" crossorigin="anonymous">
 
   <!-- Meta tags para SEO e compartilhamento -->
   <meta property="og:title" content="VI Encontro Veras & Saldanha 2026">
@@ -19,163 +20,33 @@
   <meta property="og:url" content="https://encontro-veras-saldanha.onrender.com">
   <meta name="theme-color" content="#2c3e50">
 
-  <!-- Pré-conexão para melhor performance -->
+  <!-- Pré-conexão -->
   <link rel="preconnect" href="https://encontro-veras-saldanha.onrender.com">
   <link rel="dns-prefetch" href="https://encontro-veras-saldanha.onrender.com">
 </head>
 <body>
   <div id="root">
-    <div class="loading-screen" style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #f5f5f5;">
-      <div style="text-align: center; padding: 2rem;">
-        <h1 style="color: #2c3e50; margin-bottom: 1rem; font-family: sans-serif;">
+    <div class="loading-screen" style="display:flex;justify-content:center;align-items:center;height:100vh;background:#f5f5f5;">
+      <div style="text-align:center;padding:2rem;">
+        <h1 style="color:#2c3e50;margin-bottom:1rem;font-family:sans-serif;">
           VI Encontro da Família Veras & Saldanha
         </h1>
-        <div style="display: inline-block; width: 50px; height: 50px; border: 5px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: #3498db; animation: spin 1s linear infinite;"></div>
-        <p style="margin-top: 1rem; color: #7f8c8d; font-family: sans-serif;">Carregando...</p>
+        <div style="display:inline-block;width:50px;height:50px;border:5px solid rgba(0,0,0,0.1);border-radius:50%;border-top-color:#3498db;animation:spin 1s linear infinite;"></div>
+        <p style="margin-top:1rem;color:#7f8c8d;font-family:sans-serif;">Carregando...</p>
       </div>
     </div>
   </div>
 
-<script>
-    // Função robusta para carregar scripts
-    function loadScript(src) {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.type = 'application/javascript'; // MIME type corrigido
-        script.crossOrigin = 'anonymous';
-        script.onload = () => {
-          console.log(`Script ${src} carregado com sucesso`);
-          resolve();
-        };
-        script.onerror = () => {
-          console.error(`Falha ao carregar: ${src}`);
-          reject(new Error(`Failed to load ${src}`));
-        };
-        document.body.appendChild(script);
-      });
-    }
-
-    // Página de fallback
-    function showErrorFallback() {
-      const root = document.getElementById('root');
-      if (!root) return;
-      
-      root.innerHTML = `
-        <div style="padding: 2rem; text-align: center; font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #e74c3c; margin-bottom: 1rem;">Problema no carregamento</h1>
-          <p style="margin-bottom: 1.5rem; line-height: 1.5;">
-            Ocorreu um erro ao carregar a página. Por favor, recarregue ou tente novamente mais tarde.
-          </p>
-          <button onclick="location.reload()" 
-            style="padding: 12px 24px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
-            Recarregar Página
-          </button>
-          <p style="margin-top: 2rem; color: #95a5a6; font-size: 0.9rem;">
-            Se o problema persistir, entre em contato com os organizadores.
-          </p>
-        </div>
-      `;
-    }
-
-    // Monitoramento de erros aprimorado
-    window.addEventListener('error', function(e) {
-      console.error('Erro capturado:', e.error);
-      const errorData = {
-        error: e.message,
-        stack: e.error?.stack,
-        url: location.href,
-        timestamp: new Date().toISOString()
-      };
-      
-      if (navigator.onLine) {
-        fetch('/api/log-client-error', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'  // Header adicionado
-          },
-          body: JSON.stringify(errorData)
-        }).catch(err => console.warn('Falha ao reportar erro:', err));
-      }
-      
-      // Fallback no localStorage
-      try {
-        localStorage.setItem('last_client_error', JSON.stringify(errorData));
-      } catch (e) {
-        console.warn('Não foi possível salvar erro no localStorage:', e);
-      }
-    });
-
-    // Inicialização principal com fallback
-    document.addEventListener('DOMContentLoaded', () => {
-      const loadingTimeout = setTimeout(() => {
-        const loader = document.querySelector('.loading-screen');
-        if (loader && loader.style.display !== 'none') {
-          showErrorFallback();
-        }
-      }, 10000);  // Timeout aumentado para 10s
-
-      // Carregamento com fallback
-      loadScript('/assets/index-BuJMh_j5.js')
-        .catch(() => {
-          console.warn('Falha no script local, tentando CDN...');
-          return loadScript('https://cdn-seu-site.com/fallback/index-BuJMh_j5.js');
-        })
-        .then(() => {
-          clearTimeout(loadingTimeout);
-          const loader = document.querySelector('.loading-screen');
-          if (loader) loader.style.display = 'none';
-        })
-        .catch(err => {
-          console.error('Todos os fallbacks falharam:', err);
-          showErrorFallback();
-        });
-
-      // Debug
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        console.info('Dicas para formulários:');
-        console.info('- Email: autocomplete="username"');
-        console.info('- Login: autocomplete="current-password"');
-        console.info('- Cadastro: autocomplete="new-password"');
-        
-        document.querySelector('.temp-form-example').style.display = 'block';
-        
-        ['login-form', 'signup-form'].forEach(formId => {
-          const form = document.getElementById(formId);
-          if (form) {
-            form.addEventListener('submit', async (e) => {
-              e.preventDefault();
-              const formData = new FormData(form);
-              
-              try {
-                const response = await fetch(form.action, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(Object.fromEntries(formData))
-                });
-                
-                if (!response.ok) throw new Error(await response.text());
-                alert('Operação realizada com sucesso!');
-              } catch (err) {
-                alert('Erro: ' + err.message);
-                console.error('Erro no formulário:', err);
-              }
-            });
-          }
-        });
-      }
-    });
-</script>
+  <!-- Script principal -->
+  <script src="/static/assets/index-BuJMh_j5.js" crossorigin="anonymous"></script>
 
   <style>
-    /* Animação de loading */
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-    
-    /* Exemplo de formulário (apenas para desenvolvimento) */
+
+    /* Exemplo de formulário (desenvolvimento) */
     .temp-form-example {
       position: fixed;
       bottom: 20px;
@@ -185,89 +56,65 @@
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       z-index: 1000;
-      display: none; /* Oculto por padrão */
+      display: none;
       font-family: sans-serif;
     }
-    
-    .temp-form-example h3 {
-      margin-top: 0;
-      color: #2c3e50;
-    }
-    
-    .temp-form-example label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    
-    .temp-form-example input {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 15px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
+
+    .temp-form-example h3 { margin-top:0;color:#2c3e50; }
+    .temp-form-example label { display:block;margin-bottom:5px;font-weight:bold; }
+    .temp-form-example input { width:100%;padding:8px;margin-bottom:15px;border:1px solid #ddd;border-radius:4px; }
   </style>
 
-  <!-- Exemplo de formulários (apenas para referência de desenvolvimento) -->
+  <!-- Exemplo de formulários -->
   <div class="temp-form-example">
     <h3>Exemplo de Campos Corrigidos</h3>
-
-    <!-- Login -->
     <form id="login-form" method="post" action="/api/auth/login">
       <div>
         <label for="temp-login-username">Email:</label>
-        <input type="email" id="temp-login-username" name="email" 
-               autocomplete="username" placeholder="seu@email.com" required>
+        <input type="email" id="temp-login-username" name="email" autocomplete="username" placeholder="seu@email.com" required>
       </div>
       <div>
         <label for="temp-login-password">Senha:</label>
-        <input type="password" id="temp-login-password" name="password" 
-               autocomplete="current-password" placeholder="********" required>
+        <input type="password" id="temp-login-password" name="password" autocomplete="current-password" placeholder="********" required>
       </div>
     </form>
 
-    <!-- Cadastro -->
     <form id="signup-form" method="post" action="/api/auth/cadastro">
       <div>
         <label for="temp-signup-email">Email:</label>
-        <input type="email" id="temp-signup-email" name="email" 
-               autocomplete="username" placeholder="seu@email.com" required>
+        <input type="email" id="temp-signup-email" name="email" autocomplete="username" placeholder="seu@email.com" required>
       </div>
       <div>
         <label for="temp-signup-password">Nova Senha:</label>
-        <input type="password" id="temp-signup-password" name="password" 
-               autocomplete="new-password" placeholder="********" required>
+        <input type="password" id="temp-signup-password" name="password" autocomplete="new-password" placeholder="********" required>
       </div>
       <div>
         <label for="temp-confirm-password">Confirme a Senha:</label>
-        <input type="password" id="temp-confirm-password" name="confirmPassword" 
-               autocomplete="new-password" placeholder="********" required>
+        <input type="password" id="temp-confirm-password" name="confirmPassword" autocomplete="new-password" placeholder="********" required>
       </div>
     </form>
   </div>
 
   <script>
-    // Mostra o exemplo de formulário apenas em desenvolvimento
+    // Mostra o formulário apenas em desenvolvimento
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       document.querySelector('.temp-form-example').style.display = 'block';
-      
-      // Envio assíncrono dos formulários de exemplo
+
       async function handleFormSubmit(formId) {
         const form = document.getElementById(formId);
         if (!form) return;
-        
+
         form.addEventListener('submit', async (e) => {
           e.preventDefault();
           const formData = new FormData(form);
-          
+
           try {
             const response = await fetch(form.action, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(Object.fromEntries(formData))
             });
-            
+
             if (!response.ok) throw new Error(await response.text());
             alert('Operação realizada com sucesso!');
           } catch (err) {
@@ -276,7 +123,7 @@
           }
         });
       }
-      
+
       handleFormSubmit('login-form');
       handleFormSubmit('signup-form');
     }
