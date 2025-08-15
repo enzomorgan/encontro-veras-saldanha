@@ -96,8 +96,11 @@ def create_app():
 
     # Rotas Estáticas
     @app.route('/')
-    def home():
-        return send_from_directory(app.static_folder, 'index.html')
+    def serve_index():
+        try:
+            return send_from_directory(app.static_folder, 'index.html')
+        except FileNotFoundError:
+            return "Arquivo index.html não encontrado", 404
         
     @app.route('/<path:path>')
     def serve_static(path):
