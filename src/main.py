@@ -57,16 +57,22 @@ def create_app():
     @app.route('/api/health', methods=['GET'])
     def health_check():
         try:
-            with psycopg2.connect(os.getenv('DATABASE_URL'), connect_timeout=5) as conn:
+            with psycopg2.connect(
+                os.getenv(
+                    'DATABASE_URL',
+                    "postgresql://app_user:AUQDfocoF0Lbhh0Fb0j7KcTsTVnXzso0@dpg-d2b7pe95pdvs73cgp4bg-a/encontro_prod"
+                ),
+                connect_timeout=5
+            ) as conn:
                 with conn.cursor() as cursor:
                     cursor.execute('SELECT 1')
-            
+
             return jsonify({
                 'status': 'healthy',
                 'version': '1.0.0',
                 'database': 'connected'
             })
-            
+
         except Exception as e:
             app.logger.error(f'Health check failed: {str(e)}')
             return jsonify({'status': 'degraded', 'error': str(e)}), 503
@@ -94,17 +100,16 @@ def create_app():
         return send_from_directory(app.static_folder, 'index.html')
         
     @app.route('/<path:path>')
-def serve_static(path):
-    if path.startswith('api/'):
-        return jsonify(error='Endpoint não encontrado'), 404
+    def serve_static(path):
+        if path.startswith('api/'):
+            return jsonify(error='Endpoint não encontrado'), 404
 
-    file_path = os.path.join(app.static_folder, path)
-    if os.path.exists(file_path) and not os.path.isdir(file_path) and path != '':
-        return send_from_directory(app.static_folder, path)
+        file_path = os.path.join(app.static_folder, path)
+        if os.path.exists(file_path) and not os.path.isdir(file_path) and path != '':
+            return send_from_directory(app.static_folder, path)
 
-    # Para SPA funcionar em rotas como /dashboard, /login, etc
-    return send_from_directory(app.static_folder, 'index.html')
-
+        # Para SPA funcionar em rotas como /dashboard, /login, etc
+        return send_from_directory(app.static_folder, 'index.html')
 
     # Tratamento de Erros
     @app.errorhandler(404)
