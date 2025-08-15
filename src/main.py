@@ -13,9 +13,7 @@ def create_app():
     load_dotenv()
     app = Flask(
         __name__,
-        static_folder=os.path.abspath(
-            os.path.join(os.path.dirname(__file__), '../static')
-        )
+        static_folder=os.path.join(os.path.dirname(__file__), 'static')
     )
     
     # Configuração de timeout
