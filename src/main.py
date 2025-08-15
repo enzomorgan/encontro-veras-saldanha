@@ -9,7 +9,7 @@ import logging
 import psycopg2
 from psycopg2 import OperationalError
 
-def create_app():
+def create_app(*args, **kwargs):
     load_dotenv()
     app = Flask(
         __name__,
