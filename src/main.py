@@ -17,7 +17,7 @@ def create_app():
     app = Flask(
         __name__,
         static_folder=os.path.join(os.path.dirname(__file__), 'static'),
-        static_url_path=''
+        static_url_path='/static'
     )
     
     # Handler para timeout
