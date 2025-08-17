@@ -1,7 +1,7 @@
 // Configuração inicial
 const APP_CONFIG = {
   debug: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
-  apiBaseUrl: ''
+  apiBaseUrl: '/api'
 };
 
 // Sistema de loading
