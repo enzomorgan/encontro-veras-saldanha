@@ -1,7 +1,7 @@
 // Configuração inicial
 const APP_CONFIG = {
   debug: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
-  apiBaseUrl: 'https://encontro-veras-saldanha-backend.onrender.com'
+  apiBaseUrl: ''
 };
 
 // Sistema de loading
