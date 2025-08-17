@@ -8,7 +8,7 @@ services:
       rm -rf .cache  # Limpa cache potencialmente corrompido
       pip install --upgrade pip
       pip install --no-cache-dir -r requirements.txt  
-    startCommand: gunicorn -c gunicorn_config.py src.main:app
+    startCommand: gunicorn -c gunicorn_config.py --factory "src.main:create_app"
     env: python
     envVars:
       - key: FLASK_ENV
